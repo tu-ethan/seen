@@ -8,10 +8,10 @@ type LogEntry = {
   skills: string[]
 }
 
-type SkillProgress = {
-  name: string
-  level: number
-  note: string
+type Milestone = {
+  label: string
+  date: string
+  reached: boolean
 }
 
 const LOG_ENTRIES: LogEntry[] = [
@@ -44,11 +44,12 @@ const LOG_ENTRIES: LogEntry[] = [
   },
 ]
 
-const SKILLS: SkillProgress[] = [
-  { name: 'Leadership', level: 78, note: '+12% this quarter' },
-  { name: 'Systems Design', level: 64, note: '+8% this quarter' },
-  { name: 'Communication', level: 85, note: '+5% this quarter' },
-  { name: 'Mentorship', level: 70, note: '+15% this quarter' },
+const MILESTONES: Milestone[] = [
+  { label: 'Joined team', date: 'Jan 2026', reached: true },
+  { label: 'First project shipped', date: 'Mar 2026', reached: true },
+  { label: 'Led cross-team initiative', date: 'Jun 2026', reached: true },
+  { label: 'Mentored junior engineers', date: 'Aug 2026', reached: true },
+  { label: 'Promotion review', date: 'Oct 2026', reached: false },
 ]
 
 function Dashboard() {
@@ -82,7 +83,7 @@ function Dashboard() {
       <main className="relative z-10 flex-1 px-6 pb-16">
         <div className="max-w-5xl mx-auto">
           <div className="mb-10">
-            <p className="text-white/50 text-sm mb-2">{today}</p>
+            <p className="text-white/60 text-base mb-2">{today}</p>
             <h1
               className="text-4xl md:text-5xl text-white tracking-tight"
               style={{ fontFamily: "'Instrument Serif', serif" }}
@@ -91,59 +92,66 @@ function Dashboard() {
             </h1>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6">
-            <section>
-              <h2 className="text-white/70 text-sm font-medium uppercase tracking-wide mb-4">What you worked on</h2>
-              <div className="space-y-4">
-                {LOG_ENTRIES.map((entry) => (
-                  <div key={entry.title} className="liquid-glass rounded-2xl px-6 py-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-white text-lg font-medium">{entry.title}</h3>
-                      <span className="text-white/40 text-xs shrink-0 ml-4">{entry.date}</span>
-                    </div>
-                    <ul className="space-y-1.5 mb-4">
-                      {entry.highlights.map((highlight) => (
-                        <li key={highlight} className="text-white/70 text-sm leading-relaxed flex gap-2">
-                          <span className="text-white/30">—</span>
-                          {highlight}
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="flex flex-wrap gap-2">
-                      {entry.skills.map((skill) => (
-                        <span
-                          key={skill}
-                          className="liquid-glass rounded-full px-3 py-1 text-white/70 text-xs font-medium"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+          <section className="liquid-glass rounded-2xl overflow-hidden mb-10">
+            <div className="grid grid-cols-[10rem_1fr_15rem] text-white/60 text-sm font-semibold uppercase tracking-wide border-b border-white/10">
+              <div className="px-6 py-4 border-r border-white/10">Date</div>
+              <div className="px-6 py-4 border-r border-white/10">What you worked on</div>
+              <div className="px-6 py-4">Skills</div>
+            </div>
+            {LOG_ENTRIES.map((entry, i) => (
+              <div
+                key={entry.title}
+                className={`grid grid-cols-[10rem_1fr_15rem] ${
+                  i !== LOG_ENTRIES.length - 1 ? 'border-b border-white/10' : ''
+                }`}
+              >
+                <div className="px-6 py-6 border-r border-white/10 text-white/70 text-base">{entry.date}</div>
+                <div className="px-6 py-6 border-r border-white/10 min-w-0">
+                  <p className="text-white text-lg font-semibold mb-3">{entry.title}</p>
+                  <ul className="space-y-1.5">
+                    {entry.highlights.map((highlight) => (
+                      <li key={highlight} className="text-white/75 text-base leading-relaxed flex gap-2">
+                        <span className="text-white/40 shrink-0">—</span>
+                        {highlight}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="px-6 py-6 flex flex-col gap-2.5 items-start min-w-0">
+                  {entry.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="liquid-glass rounded-full px-4 py-1.5 text-white/85 text-sm font-medium max-w-full truncate"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </section>
+            ))}
+          </section>
 
-            <section>
-              <h2 className="text-white/70 text-sm font-medium uppercase tracking-wide mb-4">Skill progress</h2>
-              <div className="liquid-glass rounded-2xl px-6 py-5 space-y-6">
-                {SKILLS.map((skill) => (
-                  <div key={skill.name}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-white text-sm font-medium">{skill.name}</span>
-                      <span className="text-white/40 text-xs">{skill.note}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-white/80"
-                        style={{ width: `${skill.level}%` }}
-                      />
-                    </div>
+          <section>
+            <h2 className="text-white/80 text-base font-semibold uppercase tracking-wide mb-6">Progress</h2>
+            <div className="liquid-glass rounded-2xl px-8 py-10">
+              <div className="relative flex items-start justify-between">
+                <div className="absolute top-[11px] left-0 right-0 h-px bg-white/15" />
+                {MILESTONES.map((milestone) => (
+                  <div key={milestone.label} className="relative flex flex-col items-center text-center flex-1 px-2">
+                    <div
+                      className={`w-3.5 h-3.5 rounded-full mb-4 ${
+                        milestone.reached ? 'bg-white' : 'bg-white/20 border border-white/40'
+                      }`}
+                    />
+                    <p className={`text-base font-semibold mb-1 ${milestone.reached ? 'text-white' : 'text-white/50'}`}>
+                      {milestone.label}
+                    </p>
+                    <p className="text-white/50 text-sm">{milestone.date}</p>
                   </div>
                 ))}
               </div>
-            </section>
-          </div>
+            </div>
+          </section>
         </div>
       </main>
     </div>
