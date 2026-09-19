@@ -14,14 +14,14 @@ const AVATAR_COLORS = {
 
 export default function ManagerTeamPage() {
   const { allVisibleContributions } = useSeen()
-  const shared = allVisibleContributions.filter((item) => item.sharedWithManager)
+  const shared = allVisibleContributions.filter((item) => item.sharedWithManager && item.status === 'APPROVED')
 
   return (
     <div className="page-shell space-y-10">
       <header className="border-b border-white/[0.08] pb-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#8d72d8]/15 text-xs font-semibold text-[#c9baf2]">{JORDAN.initials}</span><div><p className="text-sm text-[#d4ccc1]">{JORDAN.name}</p><p className="text-xs text-[#746e66]">{JORDAN.title}</p></div></div>
-          <p className="text-xs uppercase tracking-[0.14em] text-[#777169]">Friday, September 18</p>
+          <p className="text-xs uppercase tracking-[0.14em] text-[#777169]">Saturday, September 19</p>
         </div>
         <div className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div><p className="eyebrow">Manager workspace</p><h1 className="mt-3 font-serif text-5xl tracking-[-0.03em] text-[#f4efe6] sm:text-6xl">Mission systems team</h1><p className="mt-4 max-w-2xl text-sm leading-6 text-[#958e85]">Review the professional records each employee has chosen to share, with source evidence and project context.</p></div>

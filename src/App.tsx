@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
-import { ArrowDown, ArrowRight, Check, Equal, ExternalLink, Mic2, Sparkles } from 'lucide-react'
+import { ArrowDown, ArrowRight, Equal, ExternalLink } from 'lucide-react'
 import VaporizeTextCycle, { Tag } from '@/components/ui/vapour-text-effect'
 import Dashboard from './pages/Dashboard'
 
@@ -101,58 +101,61 @@ function Landing() {
           <div className="liquid-glass mx-auto flex max-w-6xl items-center justify-between rounded-full px-5 py-3">
             <a href="#top" className="flex items-center gap-2 text-white" aria-label="Seen home"><Equal size={21} strokeWidth={2.5} /><span className="font-semibold tracking-wide">Seen</span></a>
             <div className="hidden items-center gap-7 text-sm text-white/65 md:flex"><a href="#problem" className="hover:text-white">The problem</a><a href="#belief" className="hover:text-white">Our belief</a><a href="#impact" className="hover:text-white">The impact</a></div>
-            <Link to="/dashboard" className="glass-button">See Seen</Link>
+            <Link to="/proof" className="glass-button">See Seen</Link>
           </div>
         </nav>
         <div className="relative z-10 mx-auto flex min-h-[calc(100svh-92px)] max-w-6xl flex-col justify-center px-5 pb-16 md:px-8">
           <p className="hero-kicker">Work should speak for itself.</p>
           <h1 className="hero-title">Women deserve<br />to be seen.</h1>
           <p className="mt-6 max-w-md text-base leading-7 text-white/70 md:text-lg">Seen turns everyday work into evidence—before reviews begin.</p>
-          <div className="mt-8 flex flex-wrap gap-4"><Link to="/dashboard" className="primary-button">See Seen in action <ArrowRight size={17} /></Link><a href="#problem" className="secondary-button">Why it matters <ArrowDown size={16} /></a></div>
+          <div className="mt-8 flex flex-wrap gap-4"><Link to="/proof" className="primary-button">See Seen in action <ArrowRight size={17} /></Link><a href="#problem" className="secondary-button">Why it matters <ArrowDown size={16} /></a></div>
         </div>
       </header>
 
       <div className="marquee" aria-hidden="true"><div className="marquee-track"><span>WORK</span><i>→</i><span>EVIDENCE</span><i>→</i><span>RECOGNITION</span><i>→</i><span>OPPORTUNITY</span><i>→</i><span>WORK</span><i>→</i><span>EVIDENCE</span><i>→</i><span>RECOGNITION</span><i>→</i><span>OPPORTUNITY</span><i>→</i></div></div>
 
       <StorySection id="problem" title="THE PROBLEM" className="problem-story">
-        <div className="salary-tool">
-          <div className="salary-topline">
-            <div><span>MEN’S PAY BENCHMARK</span><strong>{money(salary)}</strong></div>
-            <div className="salary-gap"><span>THE GAP</span><strong>−{money(salary - comparison)}</strong></div>
+        <div className="problem-layout">
+          <div className="salary-tool">
+            <div className="salary-topline">
+              <div><span>MEN’S PAY BENCHMARK</span><strong>{money(salary)}</strong></div>
+              <div className="salary-gap"><span>THE GAP</span><strong>−{money(salary - comparison)}</strong></div>
+            </div>
+            <label className="salary-control">
+              <span>Drag the benchmark</span>
+              <input
+                type="range"
+                min="40000"
+                max="250000"
+                step="1000"
+                value={salary}
+                onChange={(event) => setSalary(Number(event.target.value))}
+                style={{ '--salary-progress': `${((salary - 40000) / 210000) * 100}%` } as React.CSSProperties}
+              />
+            </label>
+            <div className="pay-comparison">
+              <div className="pay-card benchmark-card"><span>MEN</span><strong>{money(salary)}</strong><i>Benchmark</i></div>
+              <div className="pay-card ratio-card"><span>WOMEN</span><strong>{money(comparison)}</strong><i>At the 82.1¢ ratio</i></div>
+            </div>
+            <a className="micro-source" href={sources[0][2]} target="_blank" rel="noreferrer">Overall median weekly earnings ratio, full-time U.S. workers, 2025 <ExternalLink size={12} /></a>
           </div>
-          <label className="salary-control">
-            <span>Drag the benchmark</span>
-            <input
-              type="range"
-              min="40000"
-              max="250000"
-              step="1000"
-              value={salary}
-              onChange={(event) => setSalary(Number(event.target.value))}
-              style={{ '--salary-progress': `${((salary - 40000) / 210000) * 100}%` } as React.CSSProperties}
-            />
-          </label>
-          <div className="pay-comparison">
-            <div className="pay-card benchmark-card"><span>MEN</span><strong>{money(salary)}</strong><i>Benchmark</i></div>
-            <div className="pay-card ratio-card"><span>WOMEN</span><strong>{money(comparison)}</strong><i>At the 82.1¢ ratio</i></div>
+          <aside className="problem-why">
+            <span>WHY?</span>
+            <h2>Women are less supported.</h2>
+            <div className="support-compact">
+              <div><small>WOMEN</small><strong>31%</strong></div>
+              <i>VS</i>
+              <div><small>MEN</small><strong>45%</strong></div>
+            </div>
+            <p>of entry-level employees have a sponsor.</p>
+            <a className="micro-source" href={sources[2][2]} target="_blank" rel="noreferrer">Women in the Workplace 2025 <ExternalLink size={12} /></a>
+          </aside>
+          <div className="offer-strip">
+            <span>EVEN AFTER CONTROLLING FOR ROLE + EXPERIENCE</span>
+            <strong>5.5% LOWER STARTING OFFERS</strong>
+            <a href={sources[1][2]} target="_blank" rel="noreferrer">700,000+ offers <ExternalLink size={12} /></a>
           </div>
-          <a className="micro-source" href={sources[0][2]} target="_blank" rel="noreferrer">Overall median weekly earnings ratio, full-time U.S. workers, 2025 <ExternalLink size={12} /></a>
         </div>
-        <div className="offer-strip">
-          <span>EVEN AFTER CONTROLLING FOR ROLE + EXPERIENCE</span>
-          <strong>5.5% LOWER STARTING OFFERS</strong>
-          <a href={sources[1][2]} target="_blank" rel="noreferrer">700,000+ offers <ExternalLink size={12} /></a>
-        </div>
-      </StorySection>
-
-      <StorySection title="WHY?" className="support-story">
-        <div className="support-copy">Women are less supported.</div>
-        <div className="support-graphic">
-          <div className="support-side support-women"><span>ENTRY-LEVEL WOMEN</span><strong>31%</strong><div className="support-meter"><i /></div></div>
-          <div className="support-divider">VS</div>
-          <div className="support-side support-men"><span>ENTRY-LEVEL MEN</span><strong>45%</strong><div className="support-meter"><i /></div></div>
-        </div>
-        <a className="micro-source" href={sources[2][2]} target="_blank" rel="noreferrer">Have a sponsor at work · Women in the Workplace 2025 <ExternalLink size={12} /></a>
       </StorySection>
 
       <StorySection title="THE EFFECT" className="effect-story">
@@ -166,42 +169,27 @@ function Landing() {
       </StorySection>
 
       <StorySection id="belief" title="WHAT WE BELIEVE" className="belief-story">
-        <p className="belief-context">Mothers who are already busy should not have to do more work to prepare for promotions.</p>
-        <div className="belief-title">Focus on your work.<br />Let the work be the evidence.</div>
-        <div className="belief-grid"><span>NO EXTRA WORK<small>to be seen</small></span><span>NO RECONSTRUCTION<small>of months of impact</small></span><span>PROOF<small>ready when it matters</small></span></div>
-      </StorySection>
-
-      <StorySection title="THE SOLUTION" className="solution-story">
-        <div className="solution-grid">
-          <div><div className="seen-word">Seen.</div><p>Meetings become evidence.<br />Evidence becomes a record.</p><Link to="/dashboard" className="primary-button">See the demo <ArrowRight size={17} /></Link></div>
-          <div className="evidence-stage">
-            <div className="evidence-card card-one"><Mic2 size={17} /><span>Weekly meeting</span><small>Work happens</small></div>
-            <div className="evidence-card card-two"><Sparkles size={17} /><span>Contribution found</span><small>Launch coordination</small></div>
-            <div className="evidence-card card-three"><Check size={17} /><span>Evidence linked</span><small>Apr 14, 2026</small></div>
-            <div className="record-card"><span>IMPACT RECORD</span><strong>Led cross-team launch readiness</strong><p>Ownership · Leadership · Problem solving</p></div>
-          </div>
+        <div className="belief-title">Focus on your work<br />knowing it will be seen.</div>
+        <div className="belief-grid">
+          <div><b>1</b><span>Proof ready when it matters.</span></div>
+          <div><b>2</b><span>Objective documentation of what you did.</span></div>
+          <div><b>3</b><span>No hassle or worry about your work being forgotten.</span></div>
         </div>
       </StorySection>
 
       <StorySection id="impact" title="THE IMPACT" className="impact-story">
-        <div className="impact-layout">
-          <div className="impact-copy">
-            <span>MORE THAN JUST NUMBERS</span>
-            <h2>When women know their work will be seen, they can focus on doing it.</h2>
-          </div>
-          <div className="impact-loop" aria-label="Visible work creates confidence, leadership, culture, and inspiration for the next generation">
-            <div className="impact-center"><span>WORK</span><strong>SEEN</strong></div>
-            <div className="impact-step impact-step-one"><b>01</b><span>MORE<br />FOCUS</span><small>Less energy spent proving the work happened.</small></div>
-            <div className="impact-step impact-step-two"><b>02</b><span>MORE<br />CONFIDENCE</span><small>Women can own the impact they already make.</small></div>
-            <div className="impact-step impact-step-three"><b>03</b><span>STRONGER<br />LEADERS</span><small>Companies grow a deeper bench of women leaders.</small></div>
-            <div className="impact-step impact-step-four"><b>04</b><span>VISIBLE<br />POSSIBILITY</span><small>Younger women see leadership as a place for them.</small></div>
-          </div>
+        <div className="impact-grid" aria-label="The impact of work being seen">
+          <div><b>1</b><span>MORE<br />FOCUS</span></div>
+          <div><b>2</b><span>MORE<br />CONFIDENCE</span></div>
+          <div><b>3</b><span>STRONGER<br />LEADERS</span></div>
+          <div><b>4</b><span>BETTER<br />CULTURE</span></div>
         </div>
+        <Link to="/proof" className="primary-button impact-cta">See the demo <ArrowRight size={17} /></Link>
       </StorySection>
 
       <section className="vapour-section">
-        <div className="mx-auto h-[110px] max-w-6xl"><VaporizeTextCycle texts={['Do the work.', 'Keep the proof.', 'Be seen.', 'Seen.']} font={{ fontFamily: "'Instrument Serif', serif", fontSize: '76px', fontWeight: 400 }} color="rgb(255,255,255)" spread={4} density={7} animation={{ vaporizeDuration: 2.2, fadeInDuration: 0.8, waitDuration: 1.3 }} direction="left-to-right" alignment="center" tag={Tag.H2} /></div>
-        <Link to="/dashboard" className="primary-button mt-8">See Seen in action <ArrowRight size={17} /></Link>
+        <div className="vapour-stage"><VaporizeTextCycle texts={['Do the work.', 'Keep the proof.', 'Be seen.', 'Seen.']} font={{ fontFamily: "'Instrument Serif', serif", fontSize: '88px', fontWeight: 400 }} color="rgb(255,255,255)" spread={4} density={7} animation={{ vaporizeDuration: 2.2, fadeInDuration: 0.8, waitDuration: 1.3 }} direction="left-to-right" alignment="center" tag={Tag.H2} /></div>
+        <Link to="/proof" className="primary-button mt-8">See Seen in action <ArrowRight size={17} /></Link>
       </section>
 
       <footer className="border-t border-white/10 bg-black px-5 py-8 md:px-8"><div className="mx-auto flex max-w-6xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"><a href="#top" className="flex items-center gap-2 font-semibold"><Equal size={18} /> Seen</a><div className="flex flex-wrap gap-5 text-xs text-white/45">{sources.map(([label, , href]) => <a key={label} href={href} target="_blank" rel="noreferrer" className="hover:text-white">{label}</a>)}</div><span className="text-xs text-white/30">© 2026</span></div></footer>
@@ -210,7 +198,7 @@ function Landing() {
 }
 
 function App() {
-  return <Routes><Route path="/" element={<Landing />} /><Route path="/dashboard" element={<Dashboard />} /></Routes>
+  return <Routes><Route path="/" element={<Landing />} /><Route path="/proof" element={<Dashboard />} /><Route path="/dashboard" element={<Dashboard />} /></Routes>
 }
 
 export default App

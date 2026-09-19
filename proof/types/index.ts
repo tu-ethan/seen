@@ -9,6 +9,8 @@ export type ContributionCategory =
   | 'LED'
 
 export type ContributionStatus =
+  | 'DRAFT'
+  | 'APPROVED'
   | 'AI_CAPTURED'
   | 'NEEDS_REVIEW'
   | 'VERIFIED'
@@ -62,10 +64,23 @@ export interface ContributionEvidence {
   speaker: string
 }
 
+export type EvidenceProvider = 'GOOGLE_MEET' | 'OUTLOOK'
+export type EvidenceKind = 'MEETING_TRANSCRIPT' | 'EMAIL'
+
+export interface EvidenceSource {
+  provider: EvidenceProvider
+  kind: EvidenceKind
+  title: string
+  occurredAt: string
+  externalId: string
+  sender?: string
+}
+
 export interface Contribution {
   id: string
   employeeId: string
-  meetingId: string
+  meetingId?: string
+  source?: EvidenceSource
   projectId: string
   category: ContributionCategory
   title: string
@@ -81,11 +96,40 @@ export interface WorkspaceState {
   contributions: Contribution[]
 }
 
+export interface MeetingSeries {
+  id: string
+  title: string
+  recurrence: string
+  nextMeetingAt: string
+  meetingCode: string
+  spaceName: string
+  projectId: string
+}
+
+export interface GoogleMeetSubscription {
+  name: string
+  targetResource: string
+  eventType: 'google.workspace.meet.transcript.v2.fileGenerated'
+  expiresAt: string
+  state: 'ACTIVE'
+}
+
+export interface GoogleMeetConnection {
+  connected: boolean
+  accountEmail?: string
+  mode: 'mock' | 'live'
+  availableSeries: MeetingSeries[]
+  selectedSeries?: MeetingSeries
+  subscription?: GoogleMeetSubscription
+  lastEventAt?: string
+  lastError?: string
+}
+
 export interface SkillRecord {
   name: string
   firstDemonstrated: string
   projectIds: string[]
-  meetingCount: number
+  sourceCount: number
   examples: Contribution[]
   narrative: string
 }

@@ -20,7 +20,7 @@ export default function ManagerEmployeeRecordPage() {
 
   if (!employee) return <div className="page-shell"><div className="panel p-8"><h1 className="font-serif text-3xl">Employee record not found</h1><Link href="/manager" className="secondary-button mt-5">Return to team</Link></div></div>
 
-  const contributions = allVisibleContributions.filter((item) => item.employeeId === employee.id && item.sharedWithManager)
+  const contributions = allVisibleContributions.filter((item) => item.employeeId === employee.id && item.sharedWithManager && item.status === 'APPROVED')
   const skills = buildSkillRecords(contributions)
 
   return (
@@ -55,8 +55,8 @@ export default function ManagerEmployeeRecordPage() {
 
         <div className="panel p-6">
           <p className="eyebrow">Skills demonstrated</p>
-          <p className="mt-3 text-sm leading-6 text-[#8f887f]">Supported by distinct meeting evidence rather than proficiency scores.</p>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">{skills.map((skill) => <div key={skill.name} className="rounded-xl border border-white/[0.07] p-4"><div className="flex items-center justify-between gap-3"><p className="text-sm text-[#d5cdc2]">{skill.name}</p><span className="text-[11px] text-[#716a63]">{skill.meetingCount} {skill.meetingCount === 1 ? 'meeting' : 'meetings'}</span></div><p className="mt-2 text-xs leading-5 text-[#817a72]">{skill.narrative}</p></div>)}</div>
+          <p className="mt-3 text-sm leading-6 text-[#8f887f]">Supported by distinct meeting and email evidence rather than proficiency scores.</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">{skills.map((skill) => <div key={skill.name} className="rounded-xl border border-white/[0.07] p-4"><div className="flex items-center justify-between gap-3"><p className="text-sm text-[#d5cdc2]">{skill.name}</p><span className="text-[11px] text-[#716a63]">{skill.sourceCount} {skill.sourceCount === 1 ? 'source' : 'sources'}</span></div><p className="mt-2 text-xs leading-5 text-[#817a72]">{skill.narrative}</p></div>)}</div>
         </div>
       </section>
 

@@ -21,15 +21,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/employee/page.js"
     ],
-    "/(dashboard)/employee/contributions/page": [
+    "/api/contributions/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/employee/contributions/page.js"
+      "static/chunks/app/api/contributions/route.js"
     ],
     "/(dashboard)/employee/projects/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/employee/projects/page.js"
+    ],
+    "/(dashboard)/employee/projects/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/employee/projects/[id]/page.js"
+    ],
+    "/(dashboard)/employee/contributions/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/employee/contributions/page.js"
     ],
     "/(dashboard)/employee/skills/page": [
       "static/chunks/webpack.js",
@@ -41,15 +51,35 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/employee/review/page.js"
     ],
+    "/api/contributions/outlook/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/contributions/outlook/route.js"
+    ],
+    "/(dashboard)/employee/connections/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/employee/connections/page.js"
+    ],
+    "/api/integrations/outlook/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/integrations/outlook/route.js"
+    ],
+    "/api/integrations/google-meet/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/integrations/google-meet/route.js"
+    ],
+    "/api/integrations/google-meet/connect/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/integrations/google-meet/connect/route.js"
+    ],
     "/(dashboard)/manager/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/manager/page.js"
-    ],
-    "/(dashboard)/manager/employees/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/manager/employees/[id]/page.js"
     ]
   }
 }

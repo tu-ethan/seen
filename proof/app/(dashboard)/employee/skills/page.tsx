@@ -10,11 +10,11 @@ export default function SkillsPage() {
   const { skills } = useSeen()
   return (
     <div className="page-shell space-y-8">
-      <PageHeader eyebrow="Evidence-backed development" title="Skills" description="No proficiency scores. Every skill below is connected to work Maya described, the project where it mattered, and the meeting where it was captured." />
+      <PageHeader eyebrow="Evidence-backed development" title="Skills" description="No proficiency scores. Every skill below is connected to work Maya described, the project where it mattered, and the meeting or email where it was captured." />
       <section className="grid gap-4 lg:grid-cols-2">
         {skills.map((skill) => (
           <article key={skill.name} className="panel p-6">
-            <div className="flex items-start justify-between gap-4"><h2 className="font-serif text-2xl text-[#eee7dc]">{skill.name}</h2><span className="rounded-full border border-[#8d72d8]/25 bg-[#8d72d8]/[0.07] px-3 py-1 text-xs text-[#c7b8ee]">{skill.meetingCount} {skill.meetingCount === 1 ? 'meeting' : 'meetings'}</span></div>
+            <div className="flex items-start justify-between gap-4"><h2 className="font-serif text-2xl text-[#eee7dc]">{skill.name}</h2><span className="rounded-full border border-[#8d72d8]/25 bg-[#8d72d8]/[0.07] px-3 py-1 text-xs text-[#c7b8ee]">{skill.sourceCount} {skill.sourceCount === 1 ? 'source' : 'sources'}</span></div>
             <p className="mt-4 text-sm leading-6 text-[#9e968d]">{skill.narrative}</p>
             <dl className="mt-5 grid gap-4 border-y border-white/[0.07] py-4 text-xs sm:grid-cols-2">
               <div><dt className="flex items-center gap-1.5 text-[#6f6962]"><Calendar size={12} />First demonstrated</dt><dd className="mt-1.5 text-[#bab2a8]">{formatDate(skill.firstDemonstrated)}</dd></div>

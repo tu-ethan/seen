@@ -1,10 +1,9 @@
 'use client'
 
-import { ArrowUpRight, Clock3 } from 'lucide-react'
+import { ArrowUpRight, Clock3, Mail, Video } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { formatDate, projectById } from '@/lib/product'
+import { contributionSource, formatDate, projectById, sourceProviderLabel } from '@/lib/product'
 import type { Contribution, ContributionCategory } from '@/types'
-import StatusBadge from './StatusBadge'
 
 interface ContributionCardProps {
   contribution: Contribution
@@ -26,6 +25,8 @@ export const categoryLabel = (category: ContributionCategory) => CATEGORY_CONFIG
 export default function ContributionCard({ contribution, onClick, compact = false }: ContributionCardProps) {
   const category = CATEGORY_CONFIG[contribution.category]
   const project = projectById(contribution.projectId)
+  const source = contributionSource(contribution)
+  const SourceIcon = source.provider === 'OUTLOOK' ? Mail : Video
 
   return (
     <article
@@ -41,7 +42,9 @@ export default function ContributionCard({ contribution, onClick, compact = fals
         <span className={cn('rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]', category.classes)}>
           {category.label}
         </span>
-        <StatusBadge status={contribution.status} />
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[11px] text-[#918a82]">
+          <SourceIcon size={11} />{sourceProviderLabel(contribution)}
+        </span>
         {onClick && <ArrowUpRight className="ml-auto text-white/25 transition group-hover:text-[#b8a1f4]" size={16} />}
       </div>
       <h3 className={cn('font-serif text-[1.35rem] leading-tight text-[#f4efe6]', compact && 'text-lg')}>{contribution.title}</h3>

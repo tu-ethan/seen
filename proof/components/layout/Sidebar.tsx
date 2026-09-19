@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Activity, FileText, FolderKanban, Home, Sparkles, UserRoundCog } from 'lucide-react'
+import { Activity, Cable, FileText, FolderKanban, Home, Lightbulb, UserRoundCog } from 'lucide-react'
 import { JORDAN, MAYA } from '@/lib/fixtures'
 import { cn } from '@/lib/utils'
 
@@ -10,8 +10,9 @@ const employeeNav = [
   { label: 'Home', href: '/employee', icon: Home },
   { label: 'Impact', href: '/employee/contributions', icon: Activity },
   { label: 'Projects', href: '/employee/projects', icon: FolderKanban },
-  { label: 'Skills', href: '/employee/skills', icon: Sparkles },
+  { label: 'Skills', href: '/employee/skills', icon: Lightbulb },
   { label: 'Review Brief', href: '/employee/review', icon: FileText },
+  { label: 'Connections', href: '/employee/connections', icon: Cable },
 ]
 
 const managerNav = [{ label: 'Team records', href: '/manager', icon: UserRoundCog }]

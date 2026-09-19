@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import { ArrowUpRight, RadioTower } from 'lucide-react'
 import { useSeen } from '@/components/app/SeenProvider'
+import AnnualProjectTimeline from '@/components/dashboard/AnnualProjectTimeline'
 import PageHeader from '@/components/layout/PageHeader'
-import { PROJECTS } from '@/lib/fixtures'
+import { MAYA, PROJECTS } from '@/lib/fixtures'
 
 const ACCENTS = {
   rust: 'border-[#9b4f35]/30 before:bg-[#9b4f35]', lilac: 'border-[#8d72d8]/30 before:bg-[#8d72d8]',
@@ -14,11 +15,13 @@ const ACCENTS = {
 
 export default function ProjectsPage() {
   const { visibleContributions } = useSeen()
+  const projects = PROJECTS.filter((project) => MAYA.projectIds.includes(project.id))
   return (
     <div className="page-shell space-y-8">
-      <PageHeader eyebrow="Mission portfolio" title="Projects" description="The Mars systems Maya supports, why they matter, and the evidence of her work over time." action={<div className="flex items-center gap-2 text-xs text-[#8e867d]"><RadioTower size={14} className="text-[#b8a1f4]" />5 mission systems</div>} />
+      <PageHeader eyebrow="Mission portfolio" title="Projects" description="The Mars systems Maya supports, why they matter, and the evidence of her work over time." action={<div className="flex items-center gap-2 text-xs text-[#8e867d]"><RadioTower size={14} className="text-[#b8a1f4]" />{projects.length} mission systems</div>} />
+      <AnnualProjectTimeline contributions={visibleContributions} />
       <section className="grid gap-5 lg:grid-cols-2">
-        {PROJECTS.map((project) => {
+        {projects.map((project) => {
           const work = visibleContributions.filter((item) => item.projectId === project.id)
           const skills = [...new Set(work.flatMap((item) => item.skills))]
           return (

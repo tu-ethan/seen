@@ -522,16 +522,25 @@ const renderCanvas = ({
   canvas.width = Math.floor(width * globalDpr);
   canvas.height = Math.floor(height * globalDpr);
 
-  const fontSize = parseInt(
+  const baseFontSize = parseInt(
     framerProps.font?.fontSize?.replace("px", "") || "50"
   );
-  const font = `${framerProps.font?.fontWeight ?? 400} ${fontSize * globalDpr}px ${framerProps.font?.fontFamily ?? "sans-serif"}`;
   const color = parseColor(framerProps.color ?? "rgb(153, 153, 153)");
+  const currentText = framerProps.texts[currentTextIndex] || "Next.js";
+  const fontWeight = framerProps.font?.fontWeight ?? 400;
+  const fontFamily = framerProps.font?.fontFamily ?? "sans-serif";
+  let fittedFontSize = baseFontSize * globalDpr;
+
+  ctx.font = `${fontWeight} ${fittedFontSize}px ${fontFamily}`;
+  const measuredWidth = ctx.measureText(currentText).width;
+  const availableWidth = canvas.width * 0.88;
+  if (measuredWidth > availableWidth) {
+    fittedFontSize *= availableWidth / measuredWidth;
+  }
+  const font = `${fontWeight} ${fittedFontSize}px ${fontFamily}`;
 
   let textX;
   const textY = canvas.height / 2;
-  const currentText = framerProps.texts[currentTextIndex] || "Next.js";
-
   if (framerProps.alignment === "center") {
     textX = canvas.width / 2;
   } else if (framerProps.alignment === "left") {
