@@ -1,122 +1,32 @@
-# PROOF — Workplace Contribution Memory
+# Seen product prototype
 
-> AI-powered meeting transcription + contribution extraction. Evidence-backed performance reviews.
+This directory contains the Ares Frontier product experience for Seen. It is a self-contained, hard-coded Next.js prototype focused on Maya Chen, a firmware engineer building systems for Mars missions.
 
-## What it does
-
-PROOF runs during team meetings, transcribes what people say, identifies concrete employee contributions, and builds a longitudinal record of each person's work — so nothing gets forgotten at performance review time.
-
-**Demo flow:**
-1. Manager logs in → starts a meeting
-2. Team talks for 30–60 seconds
-3. ElevenLabs transcribes audio → Gemini extracts contributions
-4. Manager opens an employee profile → contributions already appear
-5. Click any contribution → see the original transcript evidence
-6. "Generate Impact Report" → Gemini writes an evidence-backed summary
-
-## Tech Stack
-
-| Layer | Tech |
-|---|---|
-| Frontend | Next.js 14, TypeScript, Tailwind CSS |
-| Auth | Auth0 |
-| Database | Supabase (PostgreSQL + RLS) |
-| Transcription | ElevenLabs Speech-to-Text |
-| AI Extraction | Google Gemini API |
-| Optional | Solana Devnet (contribution hash anchoring) |
-
-## Setup
+## Run it
 
 ```bash
-cd proof
-cp .env.example .env.local
-# Fill in your keys
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000). No accounts, API keys, database, microphone, upload, or environment configuration are required.
 
-### Required environment variables
+## Product flow
 
-```
-AUTH0_SECRET          # 32+ random chars
-AUTH0_BASE_URL        # http://localhost:3000
-AUTH0_ISSUER_BASE_URL # https://your-tenant.auth0.com
-AUTH0_CLIENT_ID
-AUTH0_CLIENT_SECRET
-NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY
-GEMINI_API_KEY
-ELEVENLABS_API_KEY
-```
+1. Open Maya’s employee home to see her latest contributions and the source evidence behind them.
+2. Meetings are represented as having synced automatically in the background; there is no recording or confirmation step in the app.
+3. Open the yearly timeline to see which projects Maya worked on in each month.
+4. Explore project, skill, and review views generated from the same contribution record.
+5. Open Jordan’s manager workspace to browse the shared records of Maya, Daniel, Priya, Elena, and Alex.
 
-### Database setup
+## Data and future providers
 
-```bash
-# Run the migration in Supabase SQL editor
-cat supabase/migrations/001_initial_schema.sql
+All people, projects, meetings, skills, and contributions live in `lib/fixtures.ts`. Shared types live in `types/index.ts`, and the product data is exposed consistently through `components/app/SeenProvider.tsx`.
 
-# Seed demo data
-cat supabase/seed.sql
-```
+`lib/providers/index.ts` defines the three replacement boundaries for a later connected build:
 
-### Demo mode (no Auth0 required)
+- `CalendarProvider`: prepared meeting today; later Google Calendar read-only sync.
+- `TranscriptionProvider`: prepared speaker-aware transcript; later ElevenLabs Scribe v2.
+- `ExtractionProvider`: deterministic impact cards; later Gemini structured extraction.
 
-Open `http://localhost:3000/login` and click any demo user button. Sets a cookie that bypasses Auth0.
-
-### Demo users
-
-| User | Email | Role |
-|---|---|---|
-| Jordan Lee | manager@proof.demo | Manager |
-| Maya Chen | maya@proof.demo | Employee |
-| Daniel Park | daniel@proof.demo | Employee |
-| Alex Rivera | alex@proof.demo | Employee |
-
-## Architecture
-
-```
-proof/
-├── app/
-│   ├── (auth)/login/          # Login page with demo access
-│   ├── (dashboard)/
-│   │   ├── manager/           # Manager dashboard, team, meetings, employee profiles
-│   │   └── employee/          # Employee self-view
-│   └── api/
-│       ├── auth/[auth0]/      # Auth0 handler
-│       ├── meetings/          # CRUD + processing pipeline
-│       ├── contributions/     # Evidence-backed contribution records
-│       └── reports/           # Gemini impact report generation
-├── components/
-│   ├── layout/Sidebar         # Role-aware navigation
-│   ├── dashboard/             # ContributionCard, EvidenceDrawer
-│   └── meeting/               # MeetingRecorder, ProcessingView
-├── lib/
-│   ├── providers/             # TranscriptionProvider, ExtractionProvider, ProofProvider
-│   └── supabase/              # Client + server Supabase clients
-├── supabase/
-│   ├── migrations/            # Schema with RLS
-│   └── seed.sql               # 3 months of demo data
-└── types/                     # Shared TypeScript types
-```
-
-## Key design decisions
-
-- **Evidence first**: every contribution has a traceable source (transcript segment)
-- **No ranking**: PROOF shows evidence, humans make decisions
-- **Demo fallback**: if ElevenLabs or Gemini fails, mock providers return realistic data
-- **Contribution types**: EXECUTION · OWNERSHIP · IDEATION · RESEARCH · COLLABORATION · LEADERSHIP
-- **Solana optional**: hashes (never raw text) can be anchored on Devnet for verification
-
-## Contribution types
-
-| Type | Example |
-|---|---|
-| EXECUTION | "I shipped the onboarding redesign yesterday." |
-| OWNERSHIP | "I'll own the pricing page from here." |
-| IDEATION | "What if we added a tier recommendation quiz?" |
-| RESEARCH | "I interviewed 5 customers and found pricing confusion." |
-| COLLABORATION | "I helped Daniel debug the session handler." |
-| LEADERSHIP | "I coordinated the launch across design and engineering." |
+Future credentials belong in server-side environment configuration only. They must never be exposed in client components or committed to Git.

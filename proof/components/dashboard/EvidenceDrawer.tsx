@@ -1,127 +1,50 @@
 'use client'
-import { X, ExternalLink } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import type { ContributionType } from '@/types'
 
-interface EvidenceItem {
-  id: string
-  type: ContributionType
-  title: string
-  description: string
-  project?: string
-  meeting?: string
-  date: string
-  confidence: number
-  evidence: string[]
-  skills: string[]
-  isVerified?: boolean
-}
+import { Clock3, X } from 'lucide-react'
+import { categoryLabel } from '@/components/dashboard/ContributionCard'
+import StatusBadge from '@/components/dashboard/StatusBadge'
+import { formatDate, meetingTitle, projectById } from '@/lib/product'
+import type { Contribution } from '@/types'
 
-interface EvidenceDrawerProps {
-  item: EvidenceItem | null
-  onClose: () => void
-}
-
-const TYPE_CONFIG: Record<ContributionType, { label: string; classes: string }> = {
-  EXECUTION: { label: 'Execution', classes: 'bg-violet-500/15 text-violet-300 border-violet-500/25' },
-  RESEARCH: { label: 'Research', classes: 'bg-blue-500/15 text-blue-300 border-blue-500/25' },
-  IDEATION: { label: 'Ideation', classes: 'bg-amber-500/15 text-amber-300 border-amber-500/25' },
-  OWNERSHIP: { label: 'Ownership', classes: 'bg-orange-500/15 text-orange-300 border-orange-500/25' },
-  COLLABORATION: { label: 'Collaboration', classes: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25' },
-  LEADERSHIP: { label: 'Leadership', classes: 'bg-rose-500/15 text-rose-300 border-rose-500/25' },
-}
-
-function confidenceLabel(c: number): { label: string; classes: string; note: string } {
-  if (c >= 0.9) return { label: 'High', classes: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25', note: 'Directly supported by transcript evidence' }
-  if (c >= 0.75) return { label: 'Medium', classes: 'bg-amber-500/15 text-amber-300 border-amber-500/25', note: 'Supported by contextual evidence' }
-  return { label: 'Low', classes: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/25', note: 'Inferred from limited evidence' }
-}
-
-export default function EvidenceDrawer({ item, onClose }: EvidenceDrawerProps) {
+export default function EvidenceDrawer({ item, onClose }: { item: Contribution | null; onClose: () => void }) {
   if (!item) return null
-  const type = TYPE_CONFIG[item.type]
-  const conf = confidenceLabel(item.confidence)
+  const project = projectById(item.projectId)
 
   return (
-    <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
-      {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-[480px] bg-[#141416] border-l border-[#27272A] z-50 flex flex-col animate-slide-in-right overflow-hidden">
-        {/* Header */}
-        <div className="flex items-start justify-between px-6 py-5 border-b border-[#27272A]">
-          <div className="space-y-1">
-            <span className={cn('text-xs font-medium px-2 py-0.5 rounded-md border', type.classes)}>{type.label}</span>
-            <h2 className="text-base font-semibold text-zinc-100 mt-2">{item.title}</h2>
-          </div>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors mt-1">
-            <X size={18} />
-          </button>
+    <div className="fixed inset-0 z-50">
+      <button aria-label="Close evidence" className="absolute inset-0 h-full w-full bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <aside className="animate-drawer absolute right-0 top-0 flex h-full w-full max-w-[560px] flex-col border-l border-white/10 bg-[#11100f] shadow-2xl">
+        <header className="flex items-start justify-between border-b border-white/[0.08] px-6 py-5 sm:px-8">
+          <div><p className="eyebrow">Source evidence</p><div className="mt-3"><StatusBadge status={item.status} /></div></div>
+          <button aria-label="Close drawer" onClick={onClose} className="icon-button"><X size={18} /></button>
+        </header>
+
+        <div className="flex-1 overflow-y-auto px-6 py-7 sm:px-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#b39a8e]">{categoryLabel(item.category)}</p>
+          <h2 className="mt-3 font-serif text-3xl leading-tight text-[#f4efe6]">{item.title}</h2>
+          <p className="mt-4 leading-7 text-[#aaa49a]">{item.description}</p>
+
+          <dl className="mt-8 grid grid-cols-2 gap-4 border-y border-white/[0.08] py-5 text-sm">
+            <div><dt className="text-xs text-[#716c65]">Project</dt><dd className="mt-1 text-[#d4cec4]">{project?.name}</dd></div>
+            <div><dt className="text-xs text-[#716c65]">Captured</dt><dd className="mt-1 text-[#d4cec4]">{formatDate(item.date)}</dd></div>
+            <div className="col-span-2"><dt className="text-xs text-[#716c65]">Source</dt><dd className="mt-1 text-[#d4cec4]">{meetingTitle(item.meetingId)}</dd></div>
+          </dl>
+
+          <section className="mt-8">
+            <p className="eyebrow">What Maya said</p>
+            <div className="mt-3 space-y-3">
+              {item.evidence.map((evidence) => (
+                <blockquote key={`${evidence.timestamp}-${evidence.quote}`} className="rounded-2xl border border-[#8d72d8]/25 bg-[#8d72d8]/[0.07] p-5">
+                  <p className="font-serif text-lg leading-7 text-[#e5ded3]">“{evidence.quote}”</p>
+                  <footer className="mt-4 flex items-center gap-2 text-xs text-[#8f897f]"><Clock3 size={12} />{evidence.timestamp} · {evidence.speaker}</footer>
+                </blockquote>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-8"><p className="eyebrow">Skills demonstrated</p><div className="mt-3 flex flex-wrap gap-2">{item.skills.map((skill) => <span key={skill} className="skill-chip">{skill}</span>)}</div></section>
         </div>
-
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
-          {/* Description */}
-          <div>
-            <p className="text-sm text-zinc-400 leading-relaxed">{item.description}</p>
-          </div>
-
-          {/* Confidence */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Confidence</p>
-            <div className="flex items-center gap-3">
-              <span className={cn('text-xs font-medium px-2.5 py-1 rounded-md border', conf.classes)}>{conf.label}</span>
-              <p className="text-xs text-zinc-600">{conf.note}</p>
-            </div>
-          </div>
-
-          {/* Source */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Source</p>
-            <div className="rounded-lg border border-[#27272A] bg-[#0F0F10] px-4 py-3 space-y-1">
-              {item.meeting && <p className="text-sm font-medium text-zinc-300">{item.meeting}</p>}
-              <p className="text-xs text-zinc-500">{item.date}</p>
-              {item.project && <p className="text-xs text-zinc-600">{item.project}</p>}
-            </div>
-          </div>
-
-          {/* Evidence */}
-          {item.evidence.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Evidence</p>
-              <div className="space-y-2">
-                {item.evidence.map((quote, i) => (
-                  <div key={i} className="border-l-2 border-violet-500/40 pl-3 py-1">
-                    <p className="text-xs text-zinc-400 italic leading-relaxed">&ldquo;{quote}&rdquo;</p>
-                    <p className="text-xs text-zinc-700 mt-1">Direct quote from transcript</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Skills */}
-          {item.skills.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Skills demonstrated</p>
-              <div className="flex flex-wrap gap-2">
-                {item.skills.map((skill) => (
-                  <span key={skill} className="text-xs px-2.5 py-1 rounded-md bg-[#1A1A1D] border border-[#27272A] text-zinc-400">{skill}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Verified on Solana */}
-          {item.isVerified && (
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
-              <div className="w-2 h-2 rounded-full bg-emerald-400" />
-              <p className="text-xs text-emerald-400 font-medium">Proof anchored on Solana Devnet</p>
-              <ExternalLink size={12} className="text-emerald-500 ml-auto" />
-            </div>
-          )}
-        </div>
-      </div>
-    </>
+      </aside>
+    </div>
   )
 }

@@ -1,165 +1,72 @@
+'use client'
+
 import Link from 'next/link'
-import { Users, Video, TrendingUp, FileText, ChevronRight, Plus, Circle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { ArrowRight, FolderKanban, ShieldCheck, UsersRound } from 'lucide-react'
+import { useSeen } from '@/components/app/SeenProvider'
+import StatusBadge from '@/components/dashboard/StatusBadge'
+import { JORDAN, PROJECTS, TEAM_MEMBERS } from '@/lib/fixtures'
+import { employeeById, formatDate, projectById } from '@/lib/product'
 
-const TEAM = [
-  {
-    id: 'a0000000-0000-0000-0000-000000000002',
-    name: 'Maya Chen',
-    initials: 'MC',
-    color: 'bg-blue-500/20 text-blue-300',
-    title: 'Senior Product Engineer',
-    contributions: 15,
-    projects: ['Project Nova', 'Project Atlas'],
-  },
-  {
-    id: 'a0000000-0000-0000-0000-000000000003',
-    name: 'Daniel Park',
-    initials: 'DP',
-    color: 'bg-emerald-500/20 text-emerald-300',
-    title: 'Software Engineer',
-    contributions: 9,
-    projects: ['Project Atlas', 'Project Orbit'],
-  },
-  {
-    id: 'a0000000-0000-0000-0000-000000000004',
-    name: 'Alex Rivera',
-    initials: 'AR',
-    color: 'bg-amber-500/20 text-amber-300',
-    title: 'Product Manager',
-    contributions: 8,
-    projects: ['Project Nova', 'Project Orbit'],
-  },
-]
-
-const RECENT_CONTRIBUTIONS = [
-  { id: '1', employeeName: 'Maya Chen', employeeInitials: 'MC', employeeColor: 'bg-blue-500/20 text-blue-300', employeeId: 'a0000000-0000-0000-0000-000000000002', type: 'EXECUTION', title: 'Completed onboarding prototype', project: 'Project Atlas', date: 'Sep 18' },
-  { id: '2', employeeName: 'Daniel Park', employeeInitials: 'DP', employeeColor: 'bg-emerald-500/20 text-emerald-300', employeeId: 'a0000000-0000-0000-0000-000000000003', type: 'EXECUTION', title: 'Resolved authentication bug blocking beta', project: 'Project Atlas', date: 'Sep 17' },
-  { id: '3', employeeName: 'Maya Chen', employeeInitials: 'MC', employeeColor: 'bg-blue-500/20 text-blue-300', employeeId: 'a0000000-0000-0000-0000-000000000002', type: 'RESEARCH', title: 'Conducted pricing page customer interviews', project: 'Project Nova', date: 'Sep 15' },
-  { id: '4', employeeName: 'Alex Rivera', employeeInitials: 'AR', employeeColor: 'bg-amber-500/20 text-amber-300', employeeId: 'a0000000-0000-0000-0000-000000000004', type: 'EXECUTION', title: 'Authored Q4 product roadmap brief', project: 'Project Nova', date: 'Sep 14' },
-  { id: '5', employeeName: 'Maya Chen', employeeInitials: 'MC', employeeColor: 'bg-blue-500/20 text-blue-300', employeeId: 'a0000000-0000-0000-0000-000000000002', type: 'LEADERSHIP', title: 'Coordinated pricing redesign across teams', project: 'Project Nova', date: 'Sep 12' },
-]
-
-const RECENT_MEETINGS = [
-  { id: 'demo-meeting-1', title: 'Project Nova Weekly Sync', project: 'Project Nova', date: 'Sep 18, 2026', contributionCount: 7 },
-  { id: 'demo-meeting-2', title: 'Atlas Sprint Review', project: 'Project Atlas', date: 'Sep 11, 2026', contributionCount: 5 },
-  { id: 'demo-meeting-3', title: 'Q3 Planning Session', project: 'Project Nova', date: 'Sep 4, 2026', contributionCount: 6 },
-]
-
-const TYPE_COLORS: Record<string, string> = {
-  EXECUTION: 'bg-violet-500/15 text-violet-300 border-violet-500/25',
-  RESEARCH: 'bg-blue-500/15 text-blue-300 border-blue-500/25',
-  IDEATION: 'bg-amber-500/15 text-amber-300 border-amber-500/25',
-  OWNERSHIP: 'bg-orange-500/15 text-orange-300 border-orange-500/25',
-  COLLABORATION: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25',
-  LEADERSHIP: 'bg-rose-500/15 text-rose-300 border-rose-500/25',
+const AVATAR_COLORS = {
+  lilac: 'bg-[#8d72d8]/18 text-[#cbbcf2]', rust: 'bg-[#9b4f35]/18 text-[#d8aa98]', blue: 'bg-[#536b91]/20 text-[#b8c9e2]',
+  sand: 'bg-[#98784c]/20 text-[#dcc49d]', green: 'bg-[#52796f]/20 text-[#abd0c6]',
 }
 
-function getGreeting() {
-  const h = new Date().getHours()
-  if (h < 12) return 'Good morning'
-  if (h < 17) return 'Good afternoon'
-  return 'Good evening'
-}
-
-export default function ManagerDashboard() {
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+export default function ManagerTeamPage() {
+  const { allVisibleContributions } = useSeen()
+  const shared = allVisibleContributions.filter((item) => item.sharedWithManager)
 
   return (
-    <div className="px-8 py-8 max-w-6xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-zinc-100">{getGreeting()}, Jordan.</h1>
-          <p className="text-zinc-500 text-sm mt-0.5">{today}</p>
+    <div className="page-shell space-y-10">
+      <header className="border-b border-white/[0.08] pb-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#8d72d8]/15 text-xs font-semibold text-[#c9baf2]">{JORDAN.initials}</span><div><p className="text-sm text-[#d4ccc1]">{JORDAN.name}</p><p className="text-xs text-[#746e66]">{JORDAN.title}</p></div></div>
+          <p className="text-xs uppercase tracking-[0.14em] text-[#777169]">Friday, September 18</p>
         </div>
-        <Link href="/manager/meetings/new" className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-          <Plus size={15} /> Start Meeting
-        </Link>
-      </div>
+        <div className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div><p className="eyebrow">Manager workspace</p><h1 className="mt-3 font-serif text-5xl tracking-[-0.03em] text-[#f4efe6] sm:text-6xl">Mission systems team</h1><p className="mt-4 max-w-2xl text-sm leading-6 text-[#958e85]">Review the professional records each employee has chosen to share, with source evidence and project context.</p></div>
+          <div className="flex items-center gap-2 rounded-full border border-[#52796f]/35 bg-[#52796f]/10 px-4 py-2 text-xs text-[#a6c8c2]"><ShieldCheck size={14} />Employee-controlled records</div>
+        </div>
+      </header>
 
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
-        {[
-          { label: 'Team Members', value: '3', icon: Users },
-          { label: 'Active Projects', value: '3', icon: FileText },
-          { label: 'Meetings This Month', value: '8', icon: Video, delta: '+2 vs last month' },
-          { label: 'Contributions This Week', value: '12', icon: TrendingUp, delta: '+4 vs last week' },
-        ].map(({ label, value, icon: Icon, delta }) => (
-          <div key={label} className="rounded-xl border border-[#27272A] bg-[#141416] p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-zinc-500">{label}</span>
-              <Icon size={14} className="text-zinc-600" />
-            </div>
-            <p className="text-2xl font-semibold text-zinc-100">{value}</p>
-            {delta && <p className="text-xs text-emerald-400 mt-1">{delta}</p>}
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-3 gap-6">
-        {/* Team */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-zinc-300">Your Team</h2>
-          </div>
-          <div className="space-y-2">
-            {TEAM.map((member) => (
-              <Link key={member.id} href={`/manager/employees/${member.id}`}
-                className="flex items-center gap-3 rounded-xl border border-[#27272A] bg-[#141416] hover:bg-[#1A1A1D] hover:border-[#3F3F46] p-4 transition-colors">
-                <div className={cn('w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold shrink-0', member.color)}>{member.initials}</div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-zinc-200">{member.name}</p>
-                  <p className="text-xs text-zinc-500">{member.title}</p>
-                  <p className="text-xs text-zinc-600 mt-0.5">{member.contributions} contributions</p>
-                </div>
-                <ChevronRight size={14} className="text-zinc-600 shrink-0" />
+      <section>
+        <div className="mb-5 flex items-end justify-between gap-4"><div><p className="eyebrow">Shared with Jordan</p><h2 className="mt-2 font-serif text-3xl text-[#eee7dc]">People and current focus</h2></div><p className="hidden text-xs text-[#716a63] sm:block">No rankings or productivity scores</p></div>
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+          {TEAM_MEMBERS.map((employee) => {
+            const work = shared.filter((item) => item.employeeId === employee.id)
+            const latest = work[0]
+            return (
+              <Link key={employee.id} href={`/manager/employees/${employee.id}`} className="panel group flex min-h-[310px] flex-col p-6 transition hover:-translate-y-0.5 hover:border-[#a98cf5]/35">
+                <div className="flex items-start justify-between gap-4"><div className="flex items-center gap-3"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${AVATAR_COLORS[employee.accent]}`}>{employee.initials}</span><div><h3 className="text-sm font-medium text-[#ddd5ca]">{employee.name}</h3><p className="mt-0.5 text-xs text-[#777169]">{employee.title}</p></div></div><ArrowRight size={16} className="text-white/20 transition group-hover:text-[#b8a1f4]" /></div>
+                <p className="mt-5 text-sm leading-6 text-[#958e85]">{employee.summary}</p>
+                <div className="mt-5 flex flex-wrap gap-2">{employee.projectIds.slice(0, 3).map((id) => <span key={id} className="skill-chip">{projectById(id)?.name}</span>)}</div>
+                {latest && <div className="mt-auto border-t border-white/[0.07] pt-5"><div className="flex flex-wrap items-center gap-2"><StatusBadge status={latest.status} /><span className="text-[11px] text-[#6e6861]">{formatDate(latest.date)}</span></div><p className="mt-2 line-clamp-2 text-sm text-[#c1b9af]">{latest.title}</p></div>}
               </Link>
-            ))}
-          </div>
+            )
+          })}
+        </div>
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-[1fr_0.9fr]">
+        <div className="panel p-6 sm:p-8">
+          <div className="flex items-center gap-2"><FolderKanban size={17} className="text-[#b8a1f4]" /><p className="eyebrow">Mission work</p></div>
+          <div className="mt-5 space-y-1">{PROJECTS.map((project) => {
+            const people = TEAM_MEMBERS.filter((employee) => employee.projectIds.includes(project.id))
+            const latest = shared.find((item) => item.projectId === project.id)
+            return <div key={project.id} className="grid gap-3 border-b border-white/[0.07] py-4 first:pt-0 last:border-0 last:pb-0 sm:grid-cols-[1fr_0.8fr]"><div><p className="text-sm text-[#d8d0c5]">{project.name}</p><p className="mt-1 text-xs text-[#756e66]">{project.shortName}</p></div><div><p className="text-xs text-[#9a9289]">{people.map((person) => person.name.split(' ')[0]).join(', ')}</p>{latest && <p className="mt-1 line-clamp-1 text-xs text-[#6f6962]">Latest: {latest.title}</p>}</div></div>
+          })}</div>
         </div>
 
-        {/* Right column */}
-        <div className="col-span-2 space-y-6">
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold text-zinc-300">Recent Contributions</h2>
-            <div className="rounded-xl border border-[#27272A] bg-[#141416] overflow-hidden">
-              {RECENT_CONTRIBUTIONS.map((c, i) => (
-                <Link key={c.id} href={`/manager/employees/${c.employeeId}`}
-                  className={cn('flex items-center gap-3 px-4 py-3 hover:bg-[#1A1A1D] transition-colors', i < RECENT_CONTRIBUTIONS.length - 1 && 'border-b border-[#1E1E21]')}>
-                  <div className={cn('w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0', c.employeeColor)}>{c.employeeInitials}</div>
-                  <span className={cn('text-xs font-medium px-2 py-0.5 rounded-md border shrink-0', TYPE_COLORS[c.type])}>{c.type}</span>
-                  <p className="text-sm text-zinc-300 flex-1 truncate">{c.title}</p>
-                  <span className="text-xs text-zinc-600 shrink-0 hidden xl:block">{c.project}</span>
-                  <span className="text-xs text-zinc-600 shrink-0">{c.date}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-zinc-300">Recent Meetings</h2>
-              <Link href="/manager/meetings" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1">
-                View all <ChevronRight size={12} />
-              </Link>
-            </div>
-            <div className="space-y-2">
-              {RECENT_MEETINGS.map((m) => (
-                <Link key={m.id} href={`/manager/meetings/${m.id}`}
-                  className="flex items-center gap-4 rounded-xl border border-[#27272A] bg-[#141416] hover:bg-[#1A1A1D] hover:border-[#3F3F46] px-4 py-3.5 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-zinc-200">{m.title}</p>
-                    <p className="text-xs text-zinc-500 mt-0.5">{m.project} · {m.date}</p>
-                  </div>
-                  <span className="text-xs text-zinc-500">{m.contributionCount} contributions</span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">COMPLETE</span>
-                </Link>
-              ))}
-            </div>
-          </div>
+        <div className="panel p-6 sm:p-8">
+          <div className="flex items-center gap-2"><UsersRound size={17} className="text-[#b8a1f4]" /><p className="eyebrow">Recent shared evidence</p></div>
+          <div className="mt-4">{shared.slice(0, 6).map((item) => {
+            const employee = employeeById(item.employeeId)
+            return <Link key={item.id} href={`/manager/employees/${item.employeeId}#${item.id}`} className="group block border-b border-white/[0.07] py-4 last:border-0"><div className="flex items-center justify-between gap-3"><p className="text-xs text-[#756e66]">{employee?.name} · {projectById(item.projectId)?.name}</p><StatusBadge status={item.status} /></div><p className="mt-2 text-sm text-[#c9c0b6] transition group-hover:text-[#e9dfd4]">{item.title}</p></Link>
+          })}</div>
         </div>
-      </div>
+      </section>
+
+      <footer className="rounded-2xl border border-white/[0.08] px-5 py-4 text-xs leading-5 text-[#716b64]">Seen shows shared work evidence, project context, and skill development. It does not show employee rankings, comparisons, speaking-time metrics, or productivity scores.</footer>
     </div>
   )
 }

@@ -1,24 +1,16 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { UserProvider } from '@auth0/nextjs-auth0/client';
+import type { Metadata } from 'next'
+import { SeenProvider } from '@/components/app/SeenProvider'
+import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'PROOF',
-  description: 'Evidence-backed workplace contributions',
-};
+  title: 'Seen · Ares Frontier',
+  description: 'An evidence-backed record of work, growth, and impact.',
+}
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="dark">
-      <body>
-        <UserProvider>
-          {children}
-        </UserProvider>
-      </body>
+    <html lang="en">
+      <body suppressHydrationWarning><SeenProvider>{children}</SeenProvider></body>
     </html>
-  );
+  )
 }

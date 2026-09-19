@@ -34,12 +34,14 @@ export const Component = () => {
   );
 };
 
-export enum Tag {
-  H1 = "h1",
-  H2 = "h2",
-  H3 = "h3",
-  P = "p",
-}
+export const Tag = {
+  H1: "h1",
+  H2: "h2",
+  H3: "h3",
+  P: "p",
+} as const;
+
+export type Tag = (typeof Tag)[keyof typeof Tag];
 
 type VaporizeTextCycleProps = {
   texts: string[];
@@ -497,7 +499,7 @@ const renderCanvas = ({
   particlesRef,
   globalDpr,
   currentTextIndex,
-  transformedDensity,
+  transformedDensity: _transformedDensity,
 }: {
   framerProps: VaporizeTextCycleProps;
   canvasRef: React.RefObject<HTMLCanvasElement>;
@@ -846,4 +848,3 @@ function useIsInView(ref: React.RefObject<HTMLElement>) {
 
   return isInView;
 }
-

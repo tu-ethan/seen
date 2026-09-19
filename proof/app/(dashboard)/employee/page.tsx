@@ -1,142 +1,70 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import ContributionCard from '@/components/dashboard/ContributionCard';
-import EvidenceDrawer from '@/components/dashboard/EvidenceDrawer';
-import { Award, Briefcase, FileText, Share2 } from 'lucide-react';
+import Link from 'next/link'
+import { useState } from 'react'
+import { ArrowRight, CalendarCheck, CheckCircle2, Clock3, Sparkles } from 'lucide-react'
+import { useSeen } from '@/components/app/SeenProvider'
+import ContributionCard from '@/components/dashboard/ContributionCard'
+import EvidenceDrawer from '@/components/dashboard/EvidenceDrawer'
+import { MAYA, PROJECTS } from '@/lib/fixtures'
+import { meetingTitle, projectById } from '@/lib/product'
 
 export default function EmployeeDashboard() {
-  const currentHour = new Date().getHours();
-  const greeting = currentHour < 12 ? 'morning' : currentHour < 18 ? 'afternoon' : 'evening';
-  const [selectedContribution, setSelectedContribution] = useState<any | null>(null);
-
-  const stats = {
-    contributions: 42,
-    projects: 4,
-    deliverables: 15,
-    crossTeam: 8,
-  };
-
-  const skills = [
-    { name: 'React', count: 15 },
-    { name: 'System Design', count: 8 },
-    { name: 'Customer Research', count: 6 },
-    { name: 'TypeScript', count: 12 },
-    { name: 'UI/UX', count: 5 },
-    { name: 'Mentoring', count: 3 },
-  ];
-
-  const recentContributions = [
-    {
-      id: '1',
-      type: 'EXECUTION',
-      title: 'Implemented Pricing UI',
-      description: 'Built the new dynamic pricing components for Project Nova.',
-      occurred_at: new Date().toISOString(),
-      confidence: 0.95,
-      project: { name: 'Project Nova' },
-      evidence: [{ id: 'e1', evidence_text: "I finished the pricing UI components, they're ready for review." }],
-      skills: ['React', 'UI/UX']
-    },
-    {
-      id: '2',
-      type: 'IDEATION',
-      title: 'Proposed offline mode architecture',
-      description: 'Suggested a ServiceWorker caching approach for the mobile web view.',
-      occurred_at: new Date(Date.now() - 86400000).toISOString(),
-      confidence: 0.88,
-      project: { name: 'Project Orbit' },
-      evidence: [{ id: 'e2', evidence_text: "What if we use a ServiceWorker to cache the GraphQL responses for offline mode?" }],
-      skills: ['System Design', 'PWA']
-    },
-    {
-      id: '3',
-      type: 'COLLABORATION',
-      title: 'Paired with backend on API design',
-      description: 'Worked with Daniel to finalize the GraphQL schema for the new onboarding flow.',
-      occurred_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-      confidence: 0.92,
-      project: { name: 'Project Atlas' },
-      evidence: [{ id: 'e3', evidence_text: "Daniel and I spent an hour figuring out the schema, we're aligned now." }],
-      skills: ['API Design', 'Communication']
-    }
-  ];
+  const { visibleContributions, skills } = useSeen()
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = visibleContributions.find((item) => item.id === selectedId) ?? null
+  const recent = visibleContributions.slice(0, 6)
+  const evidence = visibleContributions.slice(0, 5)
 
   return (
-    <div className="flex flex-col gap-10">
-      <header className="flex items-center justify-between">
+    <div className="page-shell space-y-10">
+      <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-8 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-medium text-white mb-2">Good {greeting}, Maya.</h1>
-          <p className="text-zinc-400">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          <p className="eyebrow">Friday, September 18</p>
+          <h1 className="mt-3 font-serif text-4xl tracking-[-0.03em] text-[#f4efe6] sm:text-5xl">Good morning, {MAYA.name.split(' ')[0]}.</h1>
+          <p className="mt-3 text-sm text-[#8f887f]">Here is the work Seen has added to your record.</p>
         </div>
-        <button className="flex items-center gap-2 py-2 px-4 rounded-xl bg-white text-black font-medium hover:bg-zinc-200 transition-colors">
-          <FileText className="w-5 h-5" />
-          Generate Impact Report
-        </button>
+        <div className="inline-flex items-center gap-3 rounded-full border border-[#52796f]/30 bg-[#52796f]/[0.08] px-4 py-2 text-xs text-[#a7c9c0]"><CalendarCheck size={14} />Up to date · Meetings sync in the background</div>
       </header>
 
-      <div className="grid grid-cols-4 gap-4">
-        <div className="p-5 rounded-xl border border-[#27272A] bg-[#141416]">
-          <div className="flex items-center gap-3 text-zinc-400 mb-3">
-            <Award className="w-5 h-5" />
-            <h3 className="font-medium text-sm">Contributions</h3>
+      <section className="grid gap-6 xl:grid-cols-[1.45fr_0.75fr]">
+        <div>
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <div><p className="eyebrow">Your contributions</p><h2 className="mt-2 font-serif text-3xl text-[#eee7dc]">What you moved forward</h2></div>
+            <Link href="/employee/contributions" className="flex items-center gap-1 text-sm text-[#a99e91] transition hover:text-[#c6b5f2]">See yearly timeline<ArrowRight size={15} /></Link>
           </div>
-          <p className="text-3xl font-semibold text-white">{stats.contributions}</p>
+          <div className="grid gap-4 lg:grid-cols-2">{recent.map((contribution) => <ContributionCard key={contribution.id} contribution={contribution} compact onClick={() => setSelectedId(contribution.id)} />)}</div>
         </div>
-        <div className="p-5 rounded-xl border border-[#27272A] bg-[#141416]">
-          <div className="flex items-center gap-3 text-zinc-400 mb-3">
-            <Briefcase className="w-5 h-5" />
-            <h3 className="font-medium text-sm">Projects</h3>
-          </div>
-          <p className="text-3xl font-semibold text-white">{stats.projects}</p>
-        </div>
-        <div className="p-5 rounded-xl border border-[#27272A] bg-[#141416]">
-          <div className="flex items-center gap-3 text-zinc-400 mb-3">
-            <FileText className="w-5 h-5" />
-            <h3 className="font-medium text-sm">Completed Deliverables</h3>
-          </div>
-          <p className="text-3xl font-semibold text-white">{stats.deliverables}</p>
-        </div>
-        <div className="p-5 rounded-xl border border-[#27272A] bg-[#141416]">
-          <div className="flex items-center gap-3 text-zinc-400 mb-3">
-            <Share2 className="w-5 h-5" />
-            <h3 className="font-medium text-sm">Cross-team Contributions</h3>
-          </div>
-          <p className="text-3xl font-semibold text-white">{stats.crossTeam}</p>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-3 gap-8">
-        <div className="col-span-2 flex flex-col gap-6">
-          <h2 className="text-xl font-medium text-white">Recent Contributions</h2>
-          <div className="flex flex-col gap-4">
-            {recentContributions.map((contribution) => (
-              <ContributionCard 
-                key={contribution.id} 
-                contribution={contribution as any} 
-                onClick={() => setSelectedContribution(contribution)}
-              />
+        <aside className="panel h-fit p-6 sm:p-7">
+          <div className="flex items-center justify-between"><div><p className="eyebrow">Your evidence</p><h2 className="mt-2 font-serif text-2xl text-[#eee7dc]">Specific moments, saved</h2></div><Sparkles size={18} className="text-[#a98cf5]" /></div>
+          <ul className="mt-5 space-y-1">
+            {evidence.map((item) => (
+              <li key={item.id} className="border-b border-white/[0.07] py-4 first:pt-0 last:border-0 last:pb-0">
+                <button onClick={() => setSelectedId(item.id)} className="group w-full text-left">
+                  <span className="flex items-start gap-3"><CheckCircle2 size={15} className="mt-1 shrink-0 text-[#76a297]" /><span><span className="block text-sm leading-6 text-[#d2c9bf] transition group-hover:text-[#eee6db]">{item.title}</span><span className="mt-1 block text-xs leading-5 text-[#817a72]">{item.evidence[0].quote}</span></span></span>
+                  <span className="mt-2 flex items-center gap-1.5 pl-7 text-[11px] text-[#68625c]"><Clock3 size={11} />{item.evidence[0].timestamp} · {meetingTitle(item.meetingId)}</span>
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
+        </aside>
+      </section>
+
+      <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="panel p-6 sm:p-7">
+          <div className="flex items-end justify-between gap-4"><div><p className="eyebrow">Mission work</p><h2 className="mt-2 font-serif text-2xl text-[#eee7dc]">Projects in your record</h2></div><Link href="/employee/projects" className="text-xs text-[#8c847b] hover:text-[#c6b5f2]">View projects</Link></div>
+          <div className="mt-5 grid gap-2 sm:grid-cols-2">{PROJECTS.map((project) => {
+            const latest = visibleContributions.find((item) => item.projectId === project.id)
+            return <Link key={project.id} href={`/employee/projects/${project.id}`} className="group rounded-xl border border-white/[0.07] bg-black/10 p-4 transition hover:border-[#a98cf5]/30"><div className="flex items-start justify-between gap-3"><div><p className="text-sm text-[#d0c8bd]">{project.name}</p><p className="mt-1 text-xs text-[#716a63]">{project.shortName}</p></div><ArrowRight size={13} className="text-white/20 group-hover:text-[#b8a1f4]" /></div>{latest && <p className="mt-3 line-clamp-1 text-xs text-[#8e877f]">Latest: {latest.title}</p>}</Link>
+          })}</div>
         </div>
 
-        <div className="col-span-1 flex flex-col gap-6">
-          <h2 className="text-xl font-medium text-white">Skills Demonstrated</h2>
-          <div className="p-6 rounded-xl border border-[#27272A] bg-[#141416] flex flex-wrap gap-2">
-            {skills.map(skill => (
-              <div key={skill.name} className="px-3 py-1.5 rounded-lg border border-[#27272A] bg-[#1A1A1D] text-sm flex items-center gap-2">
-                <span className="text-zinc-200">{skill.name}</span>
-                <span className="text-zinc-500">×{skill.count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+        <div className="panel p-6 sm:p-7"><p className="eyebrow">Skills demonstrated</p><h2 className="mt-2 font-serif text-2xl text-[#eee7dc]">Built through the work</h2><div className="mt-5 flex flex-wrap gap-2">{skills.slice(0, 10).map((skill) => <Link href="/employee/skills" key={skill.name} className="skill-chip transition hover:border-[#a98cf5]/35 hover:text-[#d8ccef]">{skill.name}</Link>)}</div><Link href="/employee/skills" className="mt-6 flex items-center gap-1 text-sm text-[#a99e91] hover:text-[#c6b5f2]">See skill evidence<ArrowRight size={14} /></Link></div>
+      </section>
 
-      <EvidenceDrawer 
-        item={selectedContribution} 
-        onClose={() => setSelectedContribution(null)} 
-      />
+      <p className="text-xs text-[#5f5953]">Latest evidence spans {projectById(recent[0]?.projectId)?.name ?? 'your current work'} and other active mission systems.</p>
+      <EvidenceDrawer item={selected} onClose={() => setSelectedId(null)} />
     </div>
-  );
+  )
 }

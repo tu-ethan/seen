@@ -1,9 +1,65 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root { --background: #0F0F10; }
-body { background: var(--background); color: #FAFAFA; font-family: 'Inter', system-ui, sans-serif; }
+:root {
+  --ink: #0c0b0a;
+  --paper: #f4efe6;
+  --muted: #9a9389;
+  --lilac: #a98cf5;
+  --rust: #9b4f35;
+}
+
 * { box-sizing: border-box; }
-::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #27272A; border-radius: 2px; }
+html { background: var(--ink); color-scheme: dark; }
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 84% 3%, rgba(155, 79, 53, 0.10), transparent 26rem),
+    radial-gradient(circle at 55% 90%, rgba(169, 140, 245, 0.055), transparent 30rem),
+    var(--ink);
+  color: var(--paper);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, textarea, select { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--lilac);
+  outline-offset: 3px;
+}
+::selection { background: rgba(169, 140, 245, 0.3); }
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #37322d; border-radius: 999px; }
+
+@layer components {
+  .page-shell { @apply mx-auto w-full max-w-[1500px] px-5 pb-28 pt-24 sm:px-8 md:px-10 md:py-10 lg:px-12; }
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.17em] text-[#7f786f]; }
+  .panel { @apply rounded-2xl border border-white/[0.09] bg-[#141311] shadow-[0_18px_55px_rgba(0,0,0,0.2)]; }
+  .primary-button { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-[#bca7f4]/55 bg-[#a98cf5] px-4 py-2.5 text-sm font-semibold text-[#17121f] transition hover:-translate-y-0.5 hover:bg-[#b9a4f4] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50; }
+  .secondary-button { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.035] px-4 py-2.5 text-sm font-medium text-[#c8c0b5] transition hover:border-white/20 hover:bg-white/[0.07] hover:text-[#f4efe6]; }
+  .danger-button { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-[#914f3b]/35 bg-[#914f3b]/10 px-4 py-2.5 text-sm font-medium text-[#d99c89] transition hover:border-[#914f3b]/60 hover:bg-[#914f3b]/20; }
+  .icon-button { @apply flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.09] text-[#8f887f] transition hover:bg-white/[0.05] hover:text-[#f4efe6]; }
+  .nav-link { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[#777169] transition hover:bg-white/[0.035] hover:text-[#c9c1b7]; }
+  .nav-link-active { @apply bg-white/[0.065] text-[#eee7dc] shadow-[inset_2px_0_0_#a98cf5]; }
+  .field { @apply block w-full rounded-xl border border-white/[0.12] bg-black/25 px-3.5 py-3 text-sm normal-case tracking-normal text-[#ece5da] outline-none transition placeholder:text-[#5f5a54] focus:border-[#a98cf5]/55; }
+  .skill-chip { @apply rounded-full border border-white/[0.09] bg-white/[0.035] px-3 py-1.5 text-xs text-[#b1aaa0]; }
+  .select-field { @apply h-10 rounded-xl border border-white/[0.1] bg-[#141311] px-3 text-xs text-[#bdb5ab] outline-none transition focus:border-[#a98cf5]/50; }
+}
+
+.font-serif { font-family: Georgia, 'Times New Roman', serif; }
+.seen-mark { position: relative; display: inline-flex; width: 30px; height: 20px; align-items: center; justify-content: center; border: 1.5px solid #a98cf5; border-radius: 50%; transform: rotate(-8deg); }
+.seen-mark::after { content: ''; position: absolute; width: 22px; height: 1px; background: #a98cf5; transform: rotate(8deg); opacity: .65; }
+.seen-mark span { width: 5px; height: 5px; border-radius: 50%; background: #c9b7f7; box-shadow: 0 0 12px rgba(169, 140, 245, .8); }
+.seen-mark-small { width: 25px; height: 17px; }
+.animate-drawer { animation: drawer 240ms ease-out both; }
+.topography { background-image: repeating-radial-gradient(ellipse at 85% 20%, transparent 0, transparent 28px, rgba(255,255,255,.018) 29px, transparent 30px); }
+
+@keyframes drawer { from { transform: translateX(100%); opacity: .7; } to { transform: translateX(0); opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
