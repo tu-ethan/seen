@@ -15,11 +15,9 @@ interface OutlookStatus {
   status: string
   email: string | null
   lastSyncedAt: string | null
-  subscriptionStatus: string | null
-  subscriptionExpiresAt: string | null
 }
 
-interface SyncSummary { queued: number; processed: number; ignored: number; failed: number; completedAt: string }
+interface SyncSummary { checked: number; skipped: number; evidenceCreated: number; failed: number }
 interface ProcessingResult { duplicate: boolean; contributionIds: string[]; processedAt: string }
 const EMPTY_GOOGLE: GoogleMeetConnection = { connected: false, mode: 'mock', availableSeries: [] }
 
@@ -143,7 +141,7 @@ export default function ConnectionsPage() {
     finally { setGoogleBusy(null) }
   }
 
-  const reconnectRequired = outlook?.status === 'RECONNECT_REQUIRED' || outlook?.subscriptionStatus === 'MISSING'
+  const reconnectRequired = outlook?.status === 'RECONNECT_REQUIRED'
   const generatedContributions = useMemo(() => googleResult?.contributionIds
     .map((id) => visibleContributions.find((contribution) => contribution.id === id))
     .filter((item) => item !== undefined) ?? [], [googleResult, visibleContributions])
@@ -175,7 +173,7 @@ export default function ConnectionsPage() {
           </div>}
 
           {!loading && outlook && !outlook.configured && <div className="mt-5 rounded-xl border border-[#98784c]/30 bg-[#98784c]/10 p-4 text-xs leading-5 text-[#cdb68d]"><div className="flex items-center gap-2 font-medium"><AlertTriangle size={13} />Server credentials are not configured</div><p className="mt-1 text-[#9f9078]">The prepared product demo still works. An administrator must add the documented server environment variables before Outlook can connect.</p></div>}
-          {reconnectRequired && <p className="mt-5 rounded-xl border border-[#914f3b]/30 bg-[#914f3b]/10 p-4 text-xs leading-5 text-[#d99c89]">Microsoft access or the mail subscription needs attention. Reconnect Outlook to resume private evidence capture.</p>}
+          {reconnectRequired && <p className="mt-5 rounded-xl border border-[#914f3b]/30 bg-[#914f3b]/10 p-4 text-xs leading-5 text-[#d99c89]">Microsoft access needs attention. Reconnect Outlook before syncing labeled emails again.</p>}
 
           <div className="mt-6 flex flex-wrap gap-2">
             {outlook?.connected && !reconnectRequired ? <button onClick={() => void disconnect()} disabled={busy !== null} className="secondary-button">{busy === 'disconnect' && <LoaderCircle size={14} className="animate-spin" />}Disconnect Outlook</button> : <a href="/api/integrations/outlook/connect" aria-disabled={!outlook?.configured} className={`primary-button ${!outlook?.configured ? 'pointer-events-none opacity-50' : ''}`}>{reconnectRequired ? 'Reconnect Outlook' : 'Connect Outlook'}</a>}
@@ -199,7 +197,7 @@ export default function ConnectionsPage() {
 
       {googleResult && <section className="panel p-6 sm:p-7"><div className="flex items-center gap-2 text-sm text-[#a7c9c0]"><Check size={15} />{googleResult.duplicate ? 'This transcript event was already processed.' : `${generatedContributions.length} contributions were added automatically with no review gate.`}</div>{!!generatedContributions.length && <div className="mt-4 grid gap-3 md:grid-cols-2">{generatedContributions.map((item) => <Link key={item.id} href={`/employee/contributions#${item.id}`} className="group rounded-xl border border-white/[0.08] bg-black/10 p-4 transition hover:border-[#a98cf5]/30"><div className="flex items-center justify-between gap-3"><span className="text-[11px] text-[#716a63]">{projectById(item.projectId)?.name}</span><ArrowRight size={13} className="text-white/25 group-hover:text-[#b8a1f4]" /></div><p className="mt-2 text-sm text-[#d1c8bd]">{item.title}</p></Link>)}</div>}</section>}
 
-      {result && <section className="rounded-2xl border border-[#52796f]/30 bg-[#52796f]/10 p-5 text-sm text-[#a7c9c0]"><div className="flex items-center gap-2"><Check size={15} />Sync completed.</div><p className="mt-2 text-xs text-[#849f98]">Queued {result.queued}; processed {result.processed}; ignored {result.ignored}; failed {result.failed}. New evidence-backed drafts appear privately in Review Brief.</p></section>}
+      {result && <section className="rounded-2xl border border-[#52796f]/30 bg-[#52796f]/10 p-5 text-sm text-[#a7c9c0]"><div className="flex items-center gap-2"><Check size={15} />Sync completed.</div><p className="mt-2 text-xs text-[#849f98]">Checked {result.checked}; skipped {result.skipped}; evidence created {result.evidenceCreated}; failed {result.failed}.</p>{result.evidenceCreated > 0 && <Link href="/employee/review" className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-[#c9baf2] hover:text-[#e4dafa]">Review private Outlook drafts <ArrowRight size={12} /></Link>}</section>}
 
       <section className="panel p-6 sm:p-7">
         <p className="eyebrow">Privacy controls</p>

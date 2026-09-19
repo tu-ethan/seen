@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, Route, Routes } from 'react-router-dom'
 import { ArrowDown, ArrowRight, Equal, ExternalLink } from 'lucide-react'
 import VaporizeTextCycle, { Tag } from '@/components/ui/vapour-text-effect'
-import Dashboard from './pages/Dashboard'
 
 const VIDEO_SRC =
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_115001_bcdaa3b4-03de-47e7-ad63-ae3e392c32d4.mp4'
+const PROOF_URL = import.meta.env.VITE_PROOF_URL || 'http://localhost:3000/employee'
 
 const sources = [
   ['82.1¢ earnings ratio', 'U.S. Bureau of Labor Statistics', 'https://www.bls.gov/news.release/archives/wkyeng_01282026.htm'],
@@ -101,14 +100,14 @@ function Landing() {
           <div className="liquid-glass mx-auto flex max-w-6xl items-center justify-between rounded-full px-5 py-3">
             <a href="#top" className="flex items-center gap-2 text-white" aria-label="Seen home"><Equal size={21} strokeWidth={2.5} /><span className="font-semibold tracking-wide">Seen</span></a>
             <div className="hidden items-center gap-7 text-sm text-white/65 md:flex"><a href="#problem" className="hover:text-white">The problem</a><a href="#belief" className="hover:text-white">Our belief</a><a href="#impact" className="hover:text-white">The impact</a></div>
-            <Link to="/proof" className="glass-button">See Seen</Link>
+            <a href={PROOF_URL} className="glass-button">See Seen</a>
           </div>
         </nav>
         <div className="relative z-10 mx-auto flex min-h-[calc(100svh-92px)] max-w-6xl flex-col justify-center px-5 pb-16 md:px-8">
           <p className="hero-kicker">Work should speak for itself.</p>
           <h1 className="hero-title">Women deserve<br />to be seen.</h1>
           <p className="mt-6 max-w-md text-base leading-7 text-white/70 md:text-lg">Seen turns everyday work into evidence—before reviews begin.</p>
-          <div className="mt-8 flex flex-wrap gap-4"><Link to="/proof" className="primary-button">See Seen in action <ArrowRight size={17} /></Link><a href="#problem" className="secondary-button">Why it matters <ArrowDown size={16} /></a></div>
+          <div className="mt-8 flex flex-wrap gap-4"><a href={PROOF_URL} className="primary-button">See Seen in action <ArrowRight size={17} /></a><a href="#problem" className="secondary-button">Why it matters <ArrowDown size={16} /></a></div>
         </div>
       </header>
 
@@ -184,13 +183,11 @@ function Landing() {
           <div><b>3</b><span>STRONGER<br />LEADERS</span></div>
           <div><b>4</b><span>BETTER<br />CULTURE</span></div>
         </div>
-        <Link to="/proof" className="primary-button impact-cta">See the demo <ArrowRight size={17} /></Link>
+        <div className="impact-closing">
+          <div className="vapour-stage"><VaporizeTextCycle texts={['Do the work.', 'Keep the proof.', 'Be seen.', 'Seen.']} font={{ fontFamily: "'Instrument Serif', serif", fontSize: '88px', fontWeight: 400 }} color="rgb(255,255,255)" spread={4} density={7} animation={{ vaporizeDuration: 2.2, fadeInDuration: 0.8, waitDuration: 1.3 }} direction="left-to-right" alignment="center" tag={Tag.H2} /></div>
+          <a href={PROOF_URL} className="primary-button">See Seen in action <ArrowRight size={17} /></a>
+        </div>
       </StorySection>
-
-      <section className="vapour-section">
-        <div className="vapour-stage"><VaporizeTextCycle texts={['Do the work.', 'Keep the proof.', 'Be seen.', 'Seen.']} font={{ fontFamily: "'Instrument Serif', serif", fontSize: '88px', fontWeight: 400 }} color="rgb(255,255,255)" spread={4} density={7} animation={{ vaporizeDuration: 2.2, fadeInDuration: 0.8, waitDuration: 1.3 }} direction="left-to-right" alignment="center" tag={Tag.H2} /></div>
-        <Link to="/proof" className="primary-button mt-8">See Seen in action <ArrowRight size={17} /></Link>
-      </section>
 
       <footer className="border-t border-white/10 bg-black px-5 py-8 md:px-8"><div className="mx-auto flex max-w-6xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"><a href="#top" className="flex items-center gap-2 font-semibold"><Equal size={18} /> Seen</a><div className="flex flex-wrap gap-5 text-xs text-white/45">{sources.map(([label, , href]) => <a key={label} href={href} target="_blank" rel="noreferrer" className="hover:text-white">{label}</a>)}</div><span className="text-xs text-white/30">© 2026</span></div></footer>
     </div>
@@ -198,7 +195,7 @@ function Landing() {
 }
 
 function App() {
-  return <Routes><Route path="/" element={<Landing />} /><Route path="/proof" element={<Dashboard />} /><Route path="/dashboard" element={<Dashboard />} /></Routes>
+  return <Landing />
 }
 
 export default App

@@ -6,7 +6,6 @@ import {
   getConnection,
   markConnectionError,
   saveConnection,
-  saveSubscription,
   updateConnectionTokens,
   type StoredOutlookConnection,
 } from '@/lib/server/database'
@@ -38,7 +37,6 @@ interface GraphEmailAddress {
 }
 
 interface GraphMessagePayload extends GraphMessageMetadata {
-  conversationId?: string
   subject?: string
   from?: GraphEmailAddress
   toRecipients?: GraphEmailAddress[]
@@ -48,11 +46,9 @@ interface GraphMessagePayload extends GraphMessageMetadata {
   body?: { contentType?: string; content?: string }
 }
 
-interface GraphMessageList { value?: GraphMessageMetadata[] }
-
-interface GraphSubscription {
-  id?: string
-  expirationDateTime?: string
+interface GraphMessageList {
+  value?: GraphMessageMetadata[]
+  '@odata.nextLink'?: string
 }
 
 export interface OAuthTokenSet {
@@ -64,7 +60,6 @@ export interface OAuthTokenSet {
 
 export interface OutlookMessage {
   id: string
-  conversationId: string
   subject: string
   sender: string
   recipients: string[]
@@ -119,7 +114,8 @@ export function exchangeAuthorizationCode(config: OutlookRuntimeConfig, code: st
 }
 
 async function graphRequest<T>(accessToken: string, path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`https://graph.microsoft.com/v1.0${path}`, {
+  const url = path.startsWith('https://') ? path : `https://graph.microsoft.com/v1.0${path}`
+  const response = await fetch(url, {
     ...init,
     headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', ...init?.headers },
     cache: 'no-store',
@@ -159,47 +155,13 @@ export async function accessTokenFor(connection: StoredOutlookConnection, config
   }
 }
 
-export async function createGraphSubscription(identity: SeenIdentity, connection: StoredOutlookConnection, accessToken: string, config: OutlookRuntimeConfig) {
-  const expiresAt = new Date(Date.now() + 2.5 * 24 * 60 * 60_000).toISOString()
-  const subscription = await graphRequest<GraphSubscription>(accessToken, '/subscriptions', {
-    method: 'POST',
-    body: JSON.stringify({
-      changeType: 'created,updated',
-      notificationUrl: config.webhookUrl,
-      lifecycleNotificationUrl: config.webhookUrl,
-      resource: 'me/messages',
-      expirationDateTime: expiresAt,
-      clientState: config.webhookClientState,
-    }),
-  })
-  if (!subscription.id || !subscription.expirationDateTime) throw new Error('GRAPH_SUBSCRIPTION_INVALID')
-  saveSubscription(identity, connection.id, subscription.id, subscription.expirationDateTime)
-  return subscription
-}
-
-export async function renewGraphSubscription(subscriptionId: string, accessToken: string) {
-  const expirationDateTime = new Date(Date.now() + 2.5 * 24 * 60 * 60_000).toISOString()
-  return graphRequest<GraphSubscription>(accessToken, `/subscriptions/${encodeURIComponent(subscriptionId)}`, {
-    method: 'PATCH', body: JSON.stringify({ expirationDateTime }),
-  })
-}
-
-export async function deleteGraphSubscription(subscriptionId: string, accessToken: string) {
-  return graphRequest<void>(accessToken, `/subscriptions/${encodeURIComponent(subscriptionId)}`, { method: 'DELETE' })
-}
-
-export async function getMessageMetadata(accessToken: string, messageId: string): Promise<GraphMessageMetadata> {
-  return graphRequest<GraphMessageMetadata>(accessToken, `/me/messages/${encodeURIComponent(messageId)}?$select=id,categories`)
-}
-
 const address = (recipient: GraphEmailAddress) => recipient.emailAddress?.address || recipient.emailAddress?.name || ''
 
 export async function getOutlookMessage(accessToken: string, messageId: string): Promise<OutlookMessage> {
-  const select = 'id,conversationId,subject,from,toRecipients,ccRecipients,sentDateTime,receivedDateTime,categories,body'
+  const select = 'id,subject,from,toRecipients,ccRecipients,sentDateTime,receivedDateTime,categories,body'
   const message = await graphRequest<GraphMessagePayload>(accessToken, `/me/messages/${encodeURIComponent(messageId)}?$select=${select}`)
   return {
     id: message.id,
-    conversationId: message.conversationId ?? '',
     subject: message.subject || 'Untitled email',
     sender: address(message.from ?? {}),
     recipients: [...(message.toRecipients ?? []), ...(message.ccRecipients ?? [])].map(address).filter(Boolean),
@@ -210,14 +172,18 @@ export async function getOutlookMessage(accessToken: string, messageId: string):
   }
 }
 
-export async function listSeenMessageIds(accessToken: string, since?: string | null) {
-  const filters = ["categories/any(category:category eq 'Seen')"]
-  if (since) filters.push(`receivedDateTime ge ${since}`)
+export async function listSeenMessageIds(accessToken: string) {
   const params = new URLSearchParams({
-    '$select': 'id,categories', '$filter': filters.join(' and '), '$orderby': 'receivedDateTime desc', '$top': '50',
+    '$select': 'id,categories', '$filter': "categories/any(category:category eq 'Seen')", '$top': '100',
   })
-  const payload = await graphRequest<GraphMessageList>(accessToken, `/me/messages?${params}`)
-  return (payload.value ?? []).filter((message) => message.categories?.includes('Seen')).map((message) => message.id)
+  const messageIds: string[] = []
+  let nextPage: string | undefined = `/me/messages?${params}`
+  while (nextPage) {
+    const payload: GraphMessageList = await graphRequest<GraphMessageList>(accessToken, nextPage)
+    messageIds.push(...(payload.value ?? []).filter((message) => message.categories?.includes('Seen')).map((message) => message.id))
+    nextPage = payload['@odata.nextLink']
+  }
+  return messageIds
 }
 
 export function connectionFor(identity: SeenIdentity) {

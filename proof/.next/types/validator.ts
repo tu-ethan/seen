@@ -191,15 +191,6 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
-// Validate ../../app/api/cron/outlook/route.ts
-{
-  type __IsExpected<Specific extends RouteHandlerConfig<"/api/cron/outlook">> = Specific
-  const handler = {} as typeof import("../../app/api/cron/outlook/route.js")
-  type __Check = __IsExpected<typeof handler>
-  // @ts-ignore
-  type __Unused = __Check
-}
-
 // Validate ../../app/api/integrations/google-meet/connect/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/integrations/google-meet/connect">> = Specific
@@ -303,15 +294,6 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/manager/employees/[id]/contributions">> = Specific
   const handler = {} as typeof import("../../app/api/manager/employees/[id]/contributions/route.js")
-  type __Check = __IsExpected<typeof handler>
-  // @ts-ignore
-  type __Unused = __Check
-}
-
-// Validate ../../app/api/webhooks/outlook/route.ts
-{
-  type __IsExpected<Specific extends RouteHandlerConfig<"/api/webhooks/outlook">> = Specific
-  const handler = {} as typeof import("../../app/api/webhooks/outlook/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

@@ -1,85 +1,251 @@
 {
   "pages": {
-    "/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/layout.css",
-      "static/chunks/app/layout.js"
+    "/_not-found/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/_not-found/page-53d0ba0f4711ebb6.js"
     ],
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+    "/api/contributions/[id]/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/contributions/[id]/route-2d1084383ece0d1e.js"
     ],
-    "/(dashboard)/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/layout.js"
-    ],
-    "/(dashboard)/employee/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/employee/page.js"
-    ],
-    "/api/contributions/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/contributions/route.js"
-    ],
-    "/(dashboard)/employee/projects/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/employee/projects/page.js"
-    ],
-    "/(dashboard)/employee/projects/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/employee/projects/[id]/page.js"
-    ],
-    "/(dashboard)/employee/contributions/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/employee/contributions/page.js"
-    ],
-    "/(dashboard)/employee/skills/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/employee/skills/page.js"
-    ],
-    "/(dashboard)/employee/review/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/employee/review/page.js"
-    ],
-    "/api/contributions/outlook/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/contributions/outlook/route.js"
-    ],
-    "/(dashboard)/employee/connections/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/employee/connections/page.js"
-    ],
-    "/api/integrations/outlook/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/integrations/outlook/route.js"
-    ],
-    "/api/integrations/google-meet/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/integrations/google-meet/route.js"
+    "/api/auth/demo/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/auth/demo/route-2d1084383ece0d1e.js"
     ],
     "/api/integrations/google-meet/connect/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/integrations/google-meet/connect/route.js"
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/integrations/google-meet/connect/route-2d1084383ece0d1e.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/css/efb4a22b60b966ad.css",
+      "static/chunks/361-966bb0768e8693a3.js",
+      "static/chunks/app/layout-1a720148ae7eee80.js"
+    ],
+    "/api/integrations/google-meet/simulate/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/integrations/google-meet/simulate/route-2d1084383ece0d1e.js"
+    ],
+    "/api/integrations/google-meet/subscription/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/integrations/google-meet/subscription/route-2d1084383ece0d1e.js"
+    ],
+    "/api/contributions/outlook/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/contributions/outlook/route-2d1084383ece0d1e.js"
+    ],
+    "/api/contributions/outlook/[id]/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/contributions/outlook/[id]/route-2d1084383ece0d1e.js"
+    ],
+    "/api/integrations/outlook/callback/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/integrations/outlook/callback/route-2d1084383ece0d1e.js"
+    ],
+    "/api/integrations/google-meet/webhook/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/integrations/google-meet/webhook/route-2d1084383ece0d1e.js"
+    ],
+    "/api/integrations/outlook/connect/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/integrations/outlook/connect/route-2d1084383ece0d1e.js"
+    ],
+    "/api/integrations/outlook/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/integrations/outlook/route-2d1084383ece0d1e.js"
+    ],
+    "/api/integrations/outlook/evidence/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/integrations/outlook/evidence/route-2d1084383ece0d1e.js"
+    ],
+    "/api/integrations/outlook/sync/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/integrations/outlook/sync/route-2d1084383ece0d1e.js"
+    ],
+    "/api/integrations/sample-sync/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/integrations/sample-sync/route-2d1084383ece0d1e.js"
+    ],
+    "/api/manager/employees/[id]/contributions/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/manager/employees/[id]/contributions/route-2d1084383ece0d1e.js"
+    ],
+    "/api/contributions/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/contributions/route-2d1084383ece0d1e.js"
+    ],
+    "/api/integrations/google-meet/route": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/api/integrations/google-meet/route-2d1084383ece0d1e.js"
+    ],
+    "/(auth)/login/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/(auth)/login/page-2d1084383ece0d1e.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/app/page-2d1084383ece0d1e.js"
+    ],
+    "/(dashboard)/layout": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/297-7295b248ad97a1e5.js",
+      "static/chunks/909-aed3aa549e59d0fb.js",
+      "static/chunks/361-966bb0768e8693a3.js",
+      "static/chunks/app/(dashboard)/layout-44fb897eba2f8a37.js"
+    ],
+    "/(dashboard)/employee/connections/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/297-7295b248ad97a1e5.js",
+      "static/chunks/361-966bb0768e8693a3.js",
+      "static/chunks/app/(dashboard)/employee/connections/page-3b4320c8b20059b0.js"
+    ],
+    "/(dashboard)/employee/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/297-7295b248ad97a1e5.js",
+      "static/chunks/909-aed3aa549e59d0fb.js",
+      "static/chunks/361-966bb0768e8693a3.js",
+      "static/chunks/352-4b1fa165f384a5ad.js",
+      "static/chunks/app/(dashboard)/employee/page-cca3b4c4b2f69b9f.js"
+    ],
+    "/(dashboard)/employee/contributions/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/909-aed3aa549e59d0fb.js",
+      "static/chunks/361-966bb0768e8693a3.js",
+      "static/chunks/352-4b1fa165f384a5ad.js",
+      "static/chunks/app/(dashboard)/employee/contributions/page-a13bc7b420da03a0.js"
+    ],
+    "/(dashboard)/employee/review/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/297-7295b248ad97a1e5.js",
+      "static/chunks/361-966bb0768e8693a3.js",
+      "static/chunks/app/(dashboard)/employee/review/page-63795c6217bde0bc.js"
+    ],
+    "/(dashboard)/employee/projects/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/297-7295b248ad97a1e5.js",
+      "static/chunks/361-966bb0768e8693a3.js",
+      "static/chunks/app/(dashboard)/employee/projects/page-455fdee048ffc46e.js"
+    ],
+    "/(dashboard)/employee/skills/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/297-7295b248ad97a1e5.js",
+      "static/chunks/361-966bb0768e8693a3.js",
+      "static/chunks/app/(dashboard)/employee/skills/page-d33deeebfbbfc428.js"
     ],
     "/(dashboard)/manager/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/manager/page.js"
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/297-7295b248ad97a1e5.js",
+      "static/chunks/909-aed3aa549e59d0fb.js",
+      "static/chunks/361-966bb0768e8693a3.js",
+      "static/chunks/app/(dashboard)/manager/page-13f2563fca41c3ff.js"
+    ],
+    "/(dashboard)/manager/employees/[id]/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/297-7295b248ad97a1e5.js",
+      "static/chunks/909-aed3aa549e59d0fb.js",
+      "static/chunks/361-966bb0768e8693a3.js",
+      "static/chunks/app/(dashboard)/manager/employees/[id]/page-49269b6bd4800c83.js"
+    ],
+    "/(dashboard)/employee/projects/[id]/page": [
+      "static/chunks/webpack-74c939c87fa0092a.js",
+      "static/chunks/4bd1b696-c023c6e3521b1417.js",
+      "static/chunks/255-37e0f0325134c4d7.js",
+      "static/chunks/main-app-48bdb5a95296665b.js",
+      "static/chunks/297-7295b248ad97a1e5.js",
+      "static/chunks/909-aed3aa549e59d0fb.js",
+      "static/chunks/361-966bb0768e8693a3.js",
+      "static/chunks/352-4b1fa165f384a5ad.js",
+      "static/chunks/app/(dashboard)/employee/projects/[id]/page-3a5812a89aada61f.js"
     ]
   }
 }

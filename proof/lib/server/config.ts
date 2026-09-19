@@ -5,8 +5,6 @@ export interface OutlookRuntimeConfig {
   clientSecret: string
   tenantId: string
   redirectUri: string
-  webhookUrl: string
-  webhookClientState: string
 }
 
 const required = (name: string) => process.env[name]?.trim() ?? ''
@@ -17,8 +15,6 @@ export function getOutlookRuntimeConfig(): OutlookRuntimeConfig | null {
     clientSecret: required('MICROSOFT_CLIENT_SECRET'),
     tenantId: required('MICROSOFT_TENANT_ID') || 'common',
     redirectUri: required('MICROSOFT_REDIRECT_URI'),
-    webhookUrl: required('MICROSOFT_WEBHOOK_URL'),
-    webhookClientState: required('MICROSOFT_WEBHOOK_CLIENT_STATE'),
   }
   return Object.values(config).every(Boolean) ? config : null
 }
@@ -30,12 +26,9 @@ export function integrationReadiness() {
     'MICROSOFT_CLIENT_ID',
     'MICROSOFT_CLIENT_SECRET',
     'MICROSOFT_REDIRECT_URI',
-    'MICROSOFT_WEBHOOK_URL',
-    'MICROSOFT_WEBHOOK_CLIENT_STATE',
     'GEMINI_API_KEY',
     'APP_ENCRYPTION_KEY',
     'SEEN_SESSION_SECRET',
-    'CRON_SECRET',
   ].filter((name) => !required(name))
   return { configured: missing.length === 0, missing }
 }

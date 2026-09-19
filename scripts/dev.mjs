@@ -7,6 +7,10 @@ const processes = [
   spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'dev:web'], {
     stdio: 'inherit',
   }),
+  spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'dev'], {
+    cwd: new URL('../proof', import.meta.url),
+    stdio: 'inherit',
+  }),
 ]
 
 let stopping = false

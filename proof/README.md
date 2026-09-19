@@ -1,6 +1,6 @@
 # Seen product prototype
 
-This directory contains the Ares Frontier product experience for Seen. It is a Next.js prototype focused on Maya Chen, a firmware engineer building systems for Mars missions, with a mock-backed Google Meet path and a production-shaped Outlook evidence pipeline.
+This directory contains the Ares Frontier product experience for Seen. It is a Next.js prototype focused on Maya Chen, a firmware engineer building systems for Mars missions, with a mock-backed Google Meet path and a demo-only manual Outlook evidence sync.
 
 ## Run it
 
@@ -26,8 +26,8 @@ The real Outlook flow is employee-owned from end to end:
 
 1. The signed-in employee connects their own Microsoft account through authorization-code OAuth with PKCE.
 2. Seen requests only `openid profile email offline_access Mail.Read`; it does not use application-wide mail permissions.
-3. Microsoft Graph webhooks enqueue message IDs and return immediately. A worker first fetches only `id,categories`.
-4. Seen fetches the minimum message fields and cleaned body only when `categories` contains the exact value `Seen`. Attachments are never requested.
+3. The employee applies the exact Outlook category `Seen` and clicks **Sync labeled emails now**.
+4. That request queries only messages carrying the exact category, skips message IDs already stored, and fetches the minimum message fields for each new result. Attachments are never requested.
 5. The body cleaner removes HTML, quoted reply chains, common signatures, tracking links, and obvious tokens, then caps text at 12,000 characters.
 6. Gemini receives one cleaned, labeled email and must return schema-valid JSON with an exact excerpt present in that email.
 7. Idempotent source and candidate constraints create private `DRAFT` records. Managers can query only `APPROVED` records and never receive a raw email body.
@@ -39,12 +39,9 @@ Tokens and minimized source references are encrypted with AES-256-GCM. Full emai
 Use `.env.example` and configure these server-only values:
 
 - `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_TENANT_ID`, and `MICROSOFT_REDIRECT_URI`
-- `MICROSOFT_WEBHOOK_URL`: public HTTPS URL ending in `/api/webhooks/outlook`
-- `MICROSOFT_WEBHOOK_CLIENT_STATE`: a long random value checked on every Graph notification
 - `GEMINI_API_KEY` and optional `GEMINI_MODEL`
 - `APP_ENCRYPTION_KEY`: 32 random bytes encoded as base64
 - `SEEN_SESSION_SECRET`: long random value used to sign the demo session boundary
-- `CRON_SECRET`: long random bearer token for `/api/cron/outlook`
 - optional `SEEN_DATABASE_PATH` (defaults to `data/seen-proof.db`) and `SEEN_DEMO_MODE`
 
 Never prefix these values with `NEXT_PUBLIC_`; none belongs in browser code.
@@ -53,9 +50,9 @@ Never prefix these values with `NEXT_PUBLIC_`; none belongs in browser code.
 
 Register a web application in Microsoft Entra ID. Add the configured redirect URI, create a client secret, and grant delegated `Mail.Read` plus `openid`, `profile`, `email`, and `offline_access`. Do not grant Microsoft Graph application mail permissions.
 
-The webhook URL must be publicly reachable over HTTPS. Microsoft validates it by sending `validationToken`; the route returns that token as plain text. Schedule an authenticated `POST /api/cron/outlook` at least every 30 minutes with `Authorization: Bearer $CRON_SECRET`. That job renews subscriptions approaching expiry, performs the safe labeled-message fallback sync, and drains queued work. Webhook requests only validate and enqueue; they never call Gemini inline.
+No Outlook webhook, Graph subscription, cron job, worker, or queue is required. `POST /api/integrations/outlook/sync` performs the complete manual sync and returns `checked`, `skipped`, `evidenceCreated`, and `failed` counts.
 
-SQLite matches the repository’s local persistence approach. Run `migrations/001_outlook_evidence.sql` against the deployment database or allow the app to initialize the same schema on first server access. A production deployment must provide a persistent writable volume for `SEEN_DATABASE_PATH`; on a serverless platform without persistent disk, move the repository contract to a managed SQL database before enabling Outlook.
+SQLite matches the repository’s local persistence approach. For a fresh database, run `migrations/001_outlook_evidence.sql`. If upgrading from the earlier automated Outlook prototype, also run `migrations/002_manual_outlook_sync.sql` to remove its obsolete subscription and job tables. The app initializes the same simplified schema on first server access. A deployed demo must provide a persistent writable volume for `SEEN_DATABASE_PATH`.
 
 The current prototype has no production identity provider. Demo mode uses Maya’s fixed server identity. Before production, set `SEEN_DEMO_MODE=false` and have the real authentication callback issue the same server-only identity shape (`workspaceId`, `employeeId`, and `role`) in an HTTP-only `seen_session` cookie. The Outlook endpoints reject unauthenticated or wrong-role access in that mode.
 
@@ -65,7 +62,7 @@ All people, projects, meetings, skills, and contributions live in `lib/fixtures.
 
 `lib/integrations/contracts.ts` defines the provider boundaries. `lib/integrations/sample.ts` supports the original fixture sync, while `lib/integrations/server/` contains server-only adapters for:
 
-- Microsoft Graph Outlook messages using delegated `Mail.Read`, exact `Seen` category filtering, subscription renewal, fallback sync, and queued processing.
+- Microsoft Graph Outlook messages using delegated `Mail.Read` and an exact-category manual sync.
 - Google Calendar recurring-series discovery, stable Google Meet space lookup, Workspace Events transcript subscriptions, paginated transcript entries, and participant display-name resolution.
 - ElevenLabs Scribe v2 audio transcription with speaker diarization.
 - Gemini JSON-schema contribution extraction from either emails or transcripts.

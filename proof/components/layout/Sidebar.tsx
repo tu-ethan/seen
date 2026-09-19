@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Activity, Cable, FileText, FolderKanban, Home, Lightbulb, UserRoundCog } from 'lucide-react'
+import { Activity, ArrowLeft, Cable, FileText, FolderKanban, Home, Lightbulb, UserRoundCog } from 'lucide-react'
 import { JORDAN, MAYA } from '@/lib/fixtures'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +16,7 @@ const employeeNav = [
 ]
 
 const managerNav = [{ label: 'Team records', href: '/manager', icon: UserRoundCog }]
+const landingUrl = process.env.NEXT_PUBLIC_LANDING_URL || 'http://localhost:5174/'
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -28,10 +29,10 @@ export default function Sidebar() {
     <>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] flex-col border-r border-white/[0.08] bg-[#0e0d0c]/95 px-4 backdrop-blur-xl md:flex">
         <div className="border-b border-white/[0.08] px-2 py-7">
-          <Link href={managerView ? '/manager' : '/employee'} className="inline-flex items-center gap-3">
+          <a href={landingUrl} className="inline-flex items-center gap-3" aria-label="Back to the Seen landing page">
             <span className="seen-mark"><span /></span>
             <span className="font-serif text-2xl tracking-[-0.03em] text-[#f4efe6]">Seen</span>
-          </Link>
+          </a>
           <p className="mt-3 text-[11px] uppercase tracking-[0.12em] text-[#68635c]">Ares Frontier · Sample workspace</p>
         </div>
 
@@ -44,6 +45,9 @@ export default function Sidebar() {
         </nav>
 
         <div className="border-t border-white/[0.08] py-4">
+          <a href={landingUrl} className="nav-link mb-3 border border-white/[0.08]">
+            <ArrowLeft size={16} />Back to landing page
+          </a>
           <Link href={managerView ? '/employee' : '/manager'} className="flex items-center gap-3 rounded-xl border border-white/[0.08] p-3 transition hover:border-[#a98cf5]/35 hover:bg-white/[0.03]">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#8d72d8]/15 text-xs font-semibold text-[#c9baf2]">{person.initials}</span>
             <span className="min-w-0"><span className="block truncate text-sm text-[#d8d1c7]">{person.name}</span><span className="block truncate text-xs text-[#716b64]">{person.title}</span></span>
@@ -55,7 +59,7 @@ export default function Sidebar() {
       </aside>
 
       <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-between border-b border-white/[0.08] bg-[#0e0d0c]/95 px-5 backdrop-blur-xl md:hidden">
-        <Link href={managerView ? '/manager' : '/employee'} className="flex items-center gap-2"><span className="seen-mark seen-mark-small"><span /></span><span className="font-serif text-xl text-[#f4efe6]">Seen</span></Link>
+        <a href={landingUrl} className="flex items-center gap-2" aria-label="Back to the Seen landing page"><ArrowLeft size={15} className="text-[#9c948a]" /><span className="seen-mark seen-mark-small"><span /></span><span className="font-serif text-xl text-[#f4efe6]">Seen</span></a>
         <Link href={managerView ? '/employee' : '/manager'} className="text-xs text-[#9c948a]">{managerView ? 'Maya view' : 'Manager view'}</Link>
       </header>
 

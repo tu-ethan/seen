@@ -56,18 +56,14 @@ export interface EmailSourceInput {
 
 const schema = `
 PRAGMA foreign_keys = ON;
+DROP TABLE IF EXISTS outlook_jobs;
+DROP TABLE IF EXISTS outlook_subscriptions;
 CREATE TABLE IF NOT EXISTS outlook_connections (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, employee_id TEXT NOT NULL,
   microsoft_user_id TEXT NOT NULL, microsoft_email TEXT NOT NULL, microsoft_display_name TEXT NOT NULL,
   encrypted_access_token TEXT NOT NULL, encrypted_refresh_token TEXT NOT NULL, access_token_expires_at TEXT NOT NULL,
   scopes TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'CONNECTED', last_synced_at TEXT, last_error_code TEXT,
   created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(workspace_id, employee_id)
-);
-CREATE TABLE IF NOT EXISTS outlook_subscriptions (
-  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, employee_id TEXT NOT NULL,
-  connection_id TEXT NOT NULL REFERENCES outlook_connections(id) ON DELETE CASCADE,
-  expires_at TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'ACTIVE', created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
-  UNIQUE(workspace_id, employee_id, connection_id)
 );
 CREATE TABLE IF NOT EXISTS processed_email_sources (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, employee_id TEXT NOT NULL, microsoft_message_id TEXT NOT NULL,
@@ -83,19 +79,11 @@ CREATE TABLE IF NOT EXISTS contribution_drafts (
   source_timestamp TEXT NOT NULL, source_email_subject TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'DRAFT',
   created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(source_id, candidate_index)
 );
-CREATE TABLE IF NOT EXISTS outlook_jobs (
-  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, employee_id TEXT NOT NULL, microsoft_message_id TEXT NOT NULL,
-  reason TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'QUEUED', attempts INTEGER NOT NULL DEFAULT 0,
-  available_at TEXT NOT NULL, last_error_code TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
-  UNIQUE(workspace_id, employee_id, microsoft_message_id)
-);
 CREATE TABLE IF NOT EXISTS audit_events (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, actor_employee_id TEXT NOT NULL, action TEXT NOT NULL,
   resource_type TEXT NOT NULL, resource_id TEXT, metadata_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_outlook_jobs_ready ON outlook_jobs(status, available_at);
 CREATE INDEX IF NOT EXISTS idx_contribution_drafts_owner_status ON contribution_drafts(workspace_id, employee_id, status);
-CREATE INDEX IF NOT EXISTS idx_outlook_subscriptions_expiry ON outlook_subscriptions(status, expires_at);
 `
 
 declare global {
@@ -140,18 +128,6 @@ export function getConnection(identity: Pick<SeenIdentity, 'workspaceId' | 'empl
   return row ? connectionFromRow(row) : null
 }
 
-export function getConnectionBySubscription(subscriptionId: string) {
-  const row = database().prepare(`SELECT c.* FROM outlook_connections c
-    JOIN outlook_subscriptions s ON s.connection_id = c.id
-    WHERE s.id = ? AND s.status = 'ACTIVE'`).get(subscriptionId)
-  return row ? connectionFromRow(row) : null
-}
-
-export function listConnections() {
-  return database().prepare("SELECT * FROM outlook_connections WHERE status IN ('CONNECTED', 'RECONNECT_REQUIRED')")
-    .all().map(connectionFromRow)
-}
-
 export function saveConnection(input: Omit<StoredOutlookConnection, 'id' | 'status' | 'lastSyncedAt' | 'lastErrorCode'>) {
   const now = new Date().toISOString()
   const existing = getConnection(input)
@@ -185,57 +161,32 @@ export function markConnectionSynced(id: string) {
   database().prepare("UPDATE outlook_connections SET last_synced_at=?, status='CONNECTED', last_error_code=NULL, updated_at=? WHERE id=?").run(now, now, id)
 }
 
-export function saveSubscription(identity: Pick<SeenIdentity, 'workspaceId' | 'employeeId'>, connectionId: string, id: string, expiresAt: string) {
-  const now = new Date().toISOString()
-  database().prepare(`INSERT INTO outlook_subscriptions (id, workspace_id, employee_id, connection_id, expires_at, status, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, 'ACTIVE', ?, ?)
-    ON CONFLICT(workspace_id, employee_id, connection_id) DO UPDATE SET id=excluded.id, expires_at=excluded.expires_at, status='ACTIVE', updated_at=excluded.updated_at`)
-    .run(id, identity.workspaceId, identity.employeeId, connectionId, expiresAt, now, now)
-}
-
-export function getSubscription(identity: Pick<SeenIdentity, 'workspaceId' | 'employeeId'>) {
-  return database().prepare('SELECT * FROM outlook_subscriptions WHERE workspace_id=? AND employee_id=?').get(identity.workspaceId, identity.employeeId) ?? null
-}
-
-export function expiringSubscriptions(before: string) {
-  return database().prepare("SELECT * FROM outlook_subscriptions WHERE status='ACTIVE' AND expires_at < ?").all(before)
-}
-
-export function markSubscriptionStatus(id: string, status: string) {
-  database().prepare('UPDATE outlook_subscriptions SET status=?, updated_at=? WHERE id=?').run(status, new Date().toISOString(), id)
-}
-
-export function updateSubscriptionExpiry(id: string, expiresAt: string) {
-  database().prepare("UPDATE outlook_subscriptions SET expires_at=?, status='ACTIVE', updated_at=? WHERE id=?")
-    .run(expiresAt, new Date().toISOString(), id)
-}
-
 export function disconnectOutlook(identity: Pick<SeenIdentity, 'workspaceId' | 'employeeId'>) {
   database().prepare('DELETE FROM outlook_connections WHERE workspace_id=? AND employee_id=?').run(identity.workspaceId, identity.employeeId)
 }
 
-export function enqueueOutlookJob(identity: Pick<SeenIdentity, 'workspaceId' | 'employeeId'>, messageId: string, reason: string) {
-  const now = new Date().toISOString()
-  database().prepare(`INSERT INTO outlook_jobs (id, workspace_id, employee_id, microsoft_message_id, reason, status, available_at, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, 'QUEUED', ?, ?, ?)
-    ON CONFLICT(workspace_id, employee_id, microsoft_message_id) DO UPDATE SET
-      status=CASE WHEN outlook_jobs.status='DONE' THEN 'DONE' ELSE 'QUEUED' END,
-      reason=excluded.reason, updated_at=excluded.updated_at`)
-    .run(randomUUID(), identity.workspaceId, identity.employeeId, messageId, reason, now, now, now)
-}
-
-export function readyJobs(limit = 20) {
-  return database().prepare("SELECT * FROM outlook_jobs WHERE status='QUEUED' AND available_at <= ? ORDER BY created_at LIMIT ?")
-    .all(new Date().toISOString(), limit)
-}
-
-export function updateJob(id: string, status: 'PROCESSING' | 'DONE' | 'FAILED', errorCode?: string) {
-  database().prepare('UPDATE outlook_jobs SET status=?, attempts=attempts+1, last_error_code=?, updated_at=? WHERE id=?')
-    .run(status, errorCode ?? null, new Date().toISOString(), id)
+export function hasProcessedEmailSource(identity: Pick<SeenIdentity, 'workspaceId' | 'employeeId'>, messageId: string) {
+  const row = database().prepare(`SELECT processing_status FROM processed_email_sources
+    WHERE workspace_id=? AND employee_id=? AND microsoft_message_id=?`)
+    .get(identity.workspaceId, identity.employeeId, messageId)
+  return row ? String(row.processing_status) !== 'FAILED' : false
 }
 
 export function claimEmailSource(identity: Pick<SeenIdentity, 'workspaceId' | 'employeeId'>, source: EmailSourceInput) {
   const now = new Date().toISOString()
+  const existing = database().prepare(`SELECT id, processing_status FROM processed_email_sources
+    WHERE workspace_id=? AND employee_id=? AND microsoft_message_id=?`)
+    .get(identity.workspaceId, identity.employeeId, source.microsoftMessageId)
+  if (existing) {
+    if (String(existing.processing_status) !== 'FAILED') return null
+    const id = String(existing.id)
+    database().prepare(`UPDATE processed_email_sources SET conversation_id=?, subject=?, source_timestamp=?,
+      encrypted_source_reference=?, processing_status='PROCESSING', failure_code=NULL, updated_at=?
+      WHERE id=? AND workspace_id=? AND employee_id=?`)
+      .run(source.conversationId, source.subject, source.sourceTimestamp, source.encryptedSourceReference,
+        now, id, identity.workspaceId, identity.employeeId)
+    return id
+  }
   const id = randomUUID()
   const result = database().prepare(`INSERT OR IGNORE INTO processed_email_sources (
     id, workspace_id, employee_id, microsoft_message_id, conversation_id, subject, source_timestamp,

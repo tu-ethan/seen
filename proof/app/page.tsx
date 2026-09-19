@@ -1,3 +1,5 @@
 import { redirect } from 'next/navigation'
 
-export default function Home() { redirect('/employee') }
+const landingUrl = process.env.NEXT_PUBLIC_LANDING_URL || 'http://localhost:5174/'
+
+export default function Home() { redirect(landingUrl) }

@@ -71,12 +71,6 @@ export function canManagerView(status: string, rawBodyIncluded: boolean) {
   return status === 'APPROVED' && !rawBodyIncluded
 }
 
-export function validCronRequest(request: Request) {
-  const expected = process.env.CRON_SECRET?.trim()
-  const provided = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? ''
-  return Boolean(expected && safeEqual(provided, expected))
-}
-
 export function setDemoSession(response: NextResponse) {
   if (sessionSecret()) {
     response.cookies.set('seen_session', encodeSession(DEMO_EMPLOYEE), {

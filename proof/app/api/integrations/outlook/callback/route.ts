@@ -3,7 +3,7 @@ import type { SeenIdentity } from '@/lib/server/auth'
 import { getOutlookRuntimeConfig } from '@/lib/server/config'
 import { decryptSecret, safeEqual } from '@/lib/server/crypto'
 import { audit } from '@/lib/server/database'
-import { createGraphSubscription, exchangeAuthorizationCode, saveAuthorizedConnection } from '@/lib/integrations/server/microsoft-graph'
+import { exchangeAuthorizationCode, saveAuthorizedConnection } from '@/lib/integrations/server/microsoft-graph'
 
 interface OAuthCookie { state: string; verifier: string; identity: SeenIdentity; createdAt: number }
 
@@ -39,14 +39,8 @@ export async function GET(request: Request) {
     const tokens = await exchangeAuthorizationCode(config, code, cookie.verifier)
     const connection = await saveAuthorizedConnection(cookie.identity, tokens)
     if (!connection) throw new Error('CONNECTION_SAVE_FAILED')
-    try {
-      await createGraphSubscription(cookie.identity, connection, tokens.accessToken, config)
-      audit(cookie.identity, 'OUTLOOK_CONNECTED', 'outlook_connection', connection.id)
-      return response('connected')
-    } catch {
-      audit(cookie.identity, 'OUTLOOK_CONNECTED_SUBSCRIPTION_PENDING', 'outlook_connection', connection.id)
-      return response('connected-subscription-pending')
-    }
+    audit(cookie.identity, 'OUTLOOK_CONNECTED', 'outlook_connection', connection.id)
+    return response('connected')
   } catch {
     return response('oauth-failed')
   }

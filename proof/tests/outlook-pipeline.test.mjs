@@ -37,7 +37,7 @@ test('labeled extraction records default to private DRAFT status', () => {
   } finally { db.close(); rmSync(directory, { recursive: true, force: true }) }
 })
 
-test('duplicate webhook deliveries cannot duplicate sources or draft cards', () => {
+test('repeated manual syncs cannot duplicate sources or draft cards', () => {
   const directory = mkdtempSync(join(tmpdir(), 'seen-outlook-'))
   const db = new DatabaseSync(join(directory, 'test.db'))
   try {
@@ -54,6 +54,17 @@ test('duplicate webhook deliveries cannot duplicate sources or draft cards', () 
     insertDraft.run('draft-1', 'workspace-a', 'employee-a', 'source-1', 0, 'SHIPPED', 'Delivered', 'Delivered.', 'I delivered.', 0.9, now, 'Evidence', now, now)
     assert.equal(insertDraft.run('draft-2', 'workspace-a', 'employee-a', 'source-1', 0, 'SHIPPED', 'Delivered', 'Delivered.', 'I delivered.', 0.9, now, 'Evidence', now, now).changes, 0)
     assert.equal(db.prepare('SELECT COUNT(*) AS count FROM contribution_drafts').get().count, 1)
+  } finally { db.close(); rmSync(directory, { recursive: true, force: true }) }
+})
+
+test('the Outlook schema has no subscription or background job tables', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'seen-outlook-'))
+  const db = new DatabaseSync(join(directory, 'test.db'))
+  try {
+    db.exec(readFileSync(new URL('../migrations/001_outlook_evidence.sql', import.meta.url), 'utf8'))
+    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map((row) => row.name)
+    assert.equal(tables.includes('outlook_subscriptions'), false)
+    assert.equal(tables.includes('outlook_jobs'), false)
   } finally { db.close(); rmSync(directory, { recursive: true, force: true }) }
 })
 

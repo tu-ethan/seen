@@ -51,7 +51,6 @@ export class GeminiOutlookEvidenceExtractor {
       employee,
       message: {
         id: message.id,
-        conversationId: message.conversationId,
         subject: message.subject,
         sender: message.sender,
         recipients: message.recipients,
