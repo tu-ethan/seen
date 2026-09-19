@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireIdentity } from '@/lib/server/auth'
-import { getOutlookRuntimeConfig } from '@/lib/server/config'
+import { getGmailRuntimeConfig } from '@/lib/server/config'
 import { encryptSecret } from '@/lib/server/crypto'
 import {
   audit,
@@ -13,22 +13,27 @@ import {
 } from '@/lib/server/database'
 import { cleanEmailBody, isSeenLabeled } from '@/lib/integrations/outlook-domain'
 import { GeminiOutlookEvidenceExtractor } from '@/lib/integrations/server/gemini-outlook'
-import { accessTokenFor, getOutlookMessage, listSeenMessageIds } from '@/lib/integrations/server/microsoft-graph'
+import { accessTokenFor, getGmailMessage, listSeenMessageIds } from '@/lib/integrations/server/gmail'
 
 const safeErrorCode = (error: unknown) => error instanceof Error ? error.message.slice(0, 80) : 'UNKNOWN_ERROR'
 
 export async function POST(request: Request) {
   const auth = requireIdentity(request, 'employee')
   if ('response' in auth) return auth.response
-  const config = getOutlookRuntimeConfig()
+  const config = getGmailRuntimeConfig()
   if (!config) return NextResponse.json({ error: 'OUTLOOK_NOT_CONFIGURED' }, { status: 503 })
   const connection = getConnection(auth.identity)
   if (!connection) return NextResponse.json({ error: 'OUTLOOK_NOT_CONNECTED' }, { status: 409 })
 
   try {
     const accessToken = await accessTokenFor(connection, config)
-    const messageIds = await listSeenMessageIds(accessToken)
+    const { labelId, messageIds } = await listSeenMessageIds(accessToken)
     const counts = { checked: messageIds.length, skipped: 0, evidenceCreated: 0, failed: 0 }
+    if (!labelId) {
+      markConnectionSynced(connection.id)
+      audit(auth.identity, 'OUTLOOK_SYNC_COMPLETED', 'gmail_connection', connection.id, counts)
+      return NextResponse.json(counts)
+    }
 
     for (const messageId of messageIds) {
       if (hasProcessedEmailSource(auth.identity, messageId)) {
@@ -38,14 +43,14 @@ export async function POST(request: Request) {
 
       let sourceId: string | null = null
       try {
-        const message = await getOutlookMessage(accessToken, messageId)
-        if (!isSeenLabeled(message.categories)) {
+        const message = await getGmailMessage(accessToken, messageId, labelId)
+        if (!isSeenLabeled(message.labels)) {
           counts.skipped += 1
           continue
         }
         const cleanedBody = cleanEmailBody(message.body, message.contentType)
         sourceId = claimEmailSource(auth.identity, {
-          microsoftMessageId: message.id,
+          gmailMessageId: message.id,
           conversationId: '',
           subject: message.subject,
           sourceTimestamp: message.timestamp,
@@ -58,8 +63,8 @@ export async function POST(request: Request) {
 
         const drafts = cleanedBody
           ? await new GeminiOutlookEvidenceExtractor().extract(message, cleanedBody, {
-            name: connection.microsoftDisplayName,
-            email: connection.microsoftEmail,
+            name: connection.gmailDisplayName,
+            email: connection.gmailEmail,
           })
           : []
         completeEmailSource(sourceId, drafts)
@@ -74,7 +79,7 @@ export async function POST(request: Request) {
     }
 
     markConnectionSynced(connection.id)
-    audit(auth.identity, 'OUTLOOK_SYNC_COMPLETED', 'outlook_connection', connection.id, counts)
+    audit(auth.identity, 'OUTLOOK_SYNC_COMPLETED', 'gmail_connection', connection.id, counts)
     return NextResponse.json(counts)
   } catch (error) {
     const code = error instanceof Error ? error.message : 'SYNC_FAILED'

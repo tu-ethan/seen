@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'
 import { TEAM_MEMBERS } from '@/lib/fixtures'
 import { createMockTranscriptEvent } from '@/lib/integrations/mock-data'
 import type { ExtractedContribution } from '@/lib/integrations/contracts'
-import { GeminiExtractionProvider } from '@/lib/integrations/server/gemini'
+import { OpenRouterExtractionProvider } from '@/lib/integrations/server/gemini'
 import { formatTimestamp, GoogleMeetApiClient, TRANSCRIPT_GENERATED_EVENT } from '@/lib/integrations/server/google-meet'
 import { getServerState, upsertContributions } from '@/lib/integrations/server/store'
 import type { Contribution, TranscriptTurn } from '@/types'
@@ -104,7 +104,7 @@ function toContribution(
 export async function processTranscriptGeneratedEvent(
   body: PubSubPushBody | CloudEvent,
   meetClient = new GoogleMeetApiClient(),
-  gemini = new GeminiExtractionProvider(),
+  gemini = new OpenRouterExtractionProvider(),
 ): Promise<TranscriptProcessingResult> {
   const { event, eventId } = parseCloudEvent(body)
   if (event.type !== TRANSCRIPT_GENERATED_EVENT) throw new Error(`Unsupported Google Workspace event type: ${event.type ?? 'missing'}`)

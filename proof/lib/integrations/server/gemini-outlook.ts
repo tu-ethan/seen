@@ -1,6 +1,6 @@
 import 'server-only'
 import { parseGeminiCandidates, type OutlookEvidenceCandidate } from '@/lib/integrations/outlook-domain'
-import type { OutlookMessage } from './microsoft-graph'
+import type { GmailMessage } from './gmail'
 
 interface GeminiResponse { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }
 
@@ -32,20 +32,25 @@ const responseSchema = {
   type: 'object', required: ['contributions'], properties: {
     contributions: { type: 'array', items: { type: 'object',
       required: ['type', 'title', 'description', 'evidenceExcerpt', 'confidence', 'sourceTimestamp', 'sourceEmailSubject'],
+      additionalProperties: false,
       properties: {
         type: { type: 'string', enum: ['IMPROVED', 'SHIPPED', 'UNBLOCKED', 'RESEARCHED', 'MENTORED', 'LED'] },
-        title: { type: 'string', maxLength: 140 }, description: { type: 'string', maxLength: 1200 },
-        evidenceExcerpt: { type: 'string', maxLength: 800 }, confidence: { type: 'number', minimum: 0, maximum: 1 },
-        sourceTimestamp: { type: 'string', maxLength: 100 }, sourceEmailSubject: { type: 'string', maxLength: 300 },
+        title: { type: 'string' }, description: { type: 'string' },
+        evidenceExcerpt: { type: 'string' }, confidence: { type: 'number' },
+        sourceTimestamp: { type: 'string' }, sourceEmailSubject: { type: 'string' },
       },
     } },
   },
+  additionalProperties: false,
 } as const
 
 export class GeminiOutlookEvidenceExtractor {
-  constructor(private readonly apiKey = process.env.GEMINI_API_KEY, private readonly model = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash') {}
+  constructor(
+    private readonly apiKey = process.env.GEMINI_API_KEY,
+    private readonly model = process.env.GEMINI_MODEL ?? 'gemini-3.8-flash',
+  ) {}
 
-  async extract(message: OutlookMessage, cleanedBody: string, employee: { name: string; email: string }): Promise<OutlookEvidenceCandidate[]> {
+  async extract(message: GmailMessage, cleanedBody: string, employee: { name: string; email: string }): Promise<OutlookEvidenceCandidate[]> {
     if (!this.apiKey) throw new Error('GEMINI_NOT_CONFIGURED')
     const suppliedEmail = {
       employee,
@@ -55,7 +60,7 @@ export class GeminiOutlookEvidenceExtractor {
         sender: message.sender,
         recipients: message.recipients,
         timestamp: message.timestamp,
-        categories: message.categories,
+        labels: message.labels,
         body: cleanedBody,
       },
     }
@@ -63,8 +68,12 @@ export class GeminiOutlookEvidenceExtractor {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': this.apiKey },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `${prompt}\n\nSupplied labeled email:\n${JSON.stringify(suppliedEmail)}` }] }],
-        generationConfig: { responseMimeType: 'application/json', responseJsonSchema: responseSchema, temperature: 0 },
+        contents: [{ role: 'user', parts: [{ text: `${prompt}\n\nSupplied labeled email:\n${JSON.stringify(suppliedEmail)}` }] }],
+        generationConfig: {
+          temperature: 0,
+          responseMimeType: 'application/json',
+          responseJsonSchema: responseSchema,
+        },
       }),
       cache: 'no-store',
     })

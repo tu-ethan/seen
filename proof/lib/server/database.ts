@@ -5,13 +5,13 @@ import { randomUUID } from 'node:crypto'
 import { DatabaseSync } from 'node:sqlite'
 import type { SeenIdentity } from './auth'
 
-export interface StoredOutlookConnection {
+export interface StoredGmailConnection {
   id: string
   workspaceId: string
   employeeId: string
-  microsoftUserId: string
-  microsoftEmail: string
-  microsoftDisplayName: string
+  googleUserId: string
+  gmailEmail: string
+  gmailDisplayName: string
   encryptedAccessToken: string
   encryptedRefreshToken: string
   accessTokenExpiresAt: string
@@ -47,7 +47,7 @@ export interface DraftInput {
 }
 
 export interface EmailSourceInput {
-  microsoftMessageId: string
+  gmailMessageId: string
   conversationId: string
   subject: string
   sourceTimestamp: string
@@ -58,18 +58,18 @@ const schema = `
 PRAGMA foreign_keys = ON;
 DROP TABLE IF EXISTS outlook_jobs;
 DROP TABLE IF EXISTS outlook_subscriptions;
-CREATE TABLE IF NOT EXISTS outlook_connections (
+CREATE TABLE IF NOT EXISTS gmail_connections (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, employee_id TEXT NOT NULL,
-  microsoft_user_id TEXT NOT NULL, microsoft_email TEXT NOT NULL, microsoft_display_name TEXT NOT NULL,
+  google_user_id TEXT NOT NULL, gmail_email TEXT NOT NULL, gmail_display_name TEXT NOT NULL,
   encrypted_access_token TEXT NOT NULL, encrypted_refresh_token TEXT NOT NULL, access_token_expires_at TEXT NOT NULL,
   scopes TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'CONNECTED', last_synced_at TEXT, last_error_code TEXT,
   created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(workspace_id, employee_id)
 );
 CREATE TABLE IF NOT EXISTS processed_email_sources (
-  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, employee_id TEXT NOT NULL, microsoft_message_id TEXT NOT NULL,
+  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, employee_id TEXT NOT NULL, gmail_message_id TEXT NOT NULL,
   conversation_id TEXT NOT NULL, subject TEXT NOT NULL, source_timestamp TEXT NOT NULL,
   encrypted_source_reference TEXT NOT NULL, processing_status TEXT NOT NULL, failure_code TEXT,
-  created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(workspace_id, employee_id, microsoft_message_id)
+  created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(workspace_id, employee_id, gmail_message_id)
 );
 CREATE TABLE IF NOT EXISTS contribution_drafts (
   id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, employee_id TEXT NOT NULL,
@@ -96,12 +96,42 @@ function databasePath() {
   return resolve(process.cwd(), process.env.SEEN_DATABASE_PATH ?? 'data/seen-proof.db')
 }
 
+function tableExists(instance: DatabaseSync, name: string) {
+  return Boolean(instance.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name))
+}
+
+function columnExists(instance: DatabaseSync, table: string, column: string) {
+  return instance.prepare(`PRAGMA table_info(${table})`).all().some((row) => String(row.name) === column)
+}
+
+function migrateLegacyOutlookStorage(instance: DatabaseSync) {
+  if (tableExists(instance, 'outlook_connections') && !tableExists(instance, 'gmail_connections')) {
+    instance.exec('ALTER TABLE outlook_connections RENAME TO gmail_connections;')
+  }
+  if (tableExists(instance, 'gmail_connections')) {
+    if (columnExists(instance, 'gmail_connections', 'microsoft_user_id')) {
+      instance.exec('ALTER TABLE gmail_connections RENAME COLUMN microsoft_user_id TO google_user_id;')
+    }
+    if (columnExists(instance, 'gmail_connections', 'microsoft_email')) {
+      instance.exec('ALTER TABLE gmail_connections RENAME COLUMN microsoft_email TO gmail_email;')
+    }
+    if (columnExists(instance, 'gmail_connections', 'microsoft_display_name')) {
+      instance.exec('ALTER TABLE gmail_connections RENAME COLUMN microsoft_display_name TO gmail_display_name;')
+    }
+    instance.exec("DELETE FROM gmail_connections WHERE scopes NOT LIKE '%gmail.readonly%';")
+  }
+  if (tableExists(instance, 'processed_email_sources') && columnExists(instance, 'processed_email_sources', 'microsoft_message_id')) {
+    instance.exec('ALTER TABLE processed_email_sources RENAME COLUMN microsoft_message_id TO gmail_message_id;')
+  }
+}
+
 export function database() {
   if (!globalThis.seenProofDatabase) {
     const path = databasePath()
     mkdirSync(dirname(path), { recursive: true })
     const instance = new DatabaseSync(path)
     instance.exec('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;')
+    migrateLegacyOutlookStorage(instance)
     instance.exec(schema)
     globalThis.seenProofDatabase = instance
   }
@@ -111,11 +141,11 @@ export function database() {
 const text = (row: Record<string, unknown>, key: string) => String(row[key] ?? '')
 const nullableText = (row: Record<string, unknown>, key: string) => row[key] == null ? null : String(row[key])
 
-function connectionFromRow(row: Record<string, unknown>): StoredOutlookConnection {
+function connectionFromRow(row: Record<string, unknown>): StoredGmailConnection {
   return {
     id: text(row, 'id'), workspaceId: text(row, 'workspace_id'), employeeId: text(row, 'employee_id'),
-    microsoftUserId: text(row, 'microsoft_user_id'), microsoftEmail: text(row, 'microsoft_email'),
-    microsoftDisplayName: text(row, 'microsoft_display_name'), encryptedAccessToken: text(row, 'encrypted_access_token'),
+    googleUserId: text(row, 'google_user_id'), gmailEmail: text(row, 'gmail_email'),
+    gmailDisplayName: text(row, 'gmail_display_name'), encryptedAccessToken: text(row, 'encrypted_access_token'),
     encryptedRefreshToken: text(row, 'encrypted_refresh_token'), accessTokenExpiresAt: text(row, 'access_token_expires_at'),
     scopes: text(row, 'scopes'), status: text(row, 'status'), lastSyncedAt: nullableText(row, 'last_synced_at'),
     lastErrorCode: nullableText(row, 'last_error_code'),
@@ -123,51 +153,51 @@ function connectionFromRow(row: Record<string, unknown>): StoredOutlookConnectio
 }
 
 export function getConnection(identity: Pick<SeenIdentity, 'workspaceId' | 'employeeId'>) {
-  const row = database().prepare('SELECT * FROM outlook_connections WHERE workspace_id = ? AND employee_id = ?')
+  const row = database().prepare('SELECT * FROM gmail_connections WHERE workspace_id = ? AND employee_id = ?')
     .get(identity.workspaceId, identity.employeeId)
   return row ? connectionFromRow(row) : null
 }
 
-export function saveConnection(input: Omit<StoredOutlookConnection, 'id' | 'status' | 'lastSyncedAt' | 'lastErrorCode'>) {
+export function saveConnection(input: Omit<StoredGmailConnection, 'id' | 'status' | 'lastSyncedAt' | 'lastErrorCode'>) {
   const now = new Date().toISOString()
   const existing = getConnection(input)
   const id = existing?.id ?? randomUUID()
-  database().prepare(`INSERT INTO outlook_connections (
-    id, workspace_id, employee_id, microsoft_user_id, microsoft_email, microsoft_display_name,
+  database().prepare(`INSERT INTO gmail_connections (
+    id, workspace_id, employee_id, google_user_id, gmail_email, gmail_display_name,
     encrypted_access_token, encrypted_refresh_token, access_token_expires_at, scopes, status, created_at, updated_at
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CONNECTED', ?, ?)
   ON CONFLICT(workspace_id, employee_id) DO UPDATE SET
-    microsoft_user_id=excluded.microsoft_user_id, microsoft_email=excluded.microsoft_email,
-    microsoft_display_name=excluded.microsoft_display_name, encrypted_access_token=excluded.encrypted_access_token,
+    google_user_id=excluded.google_user_id, gmail_email=excluded.gmail_email,
+    gmail_display_name=excluded.gmail_display_name, encrypted_access_token=excluded.encrypted_access_token,
     encrypted_refresh_token=excluded.encrypted_refresh_token, access_token_expires_at=excluded.access_token_expires_at,
     scopes=excluded.scopes, status='CONNECTED', last_error_code=NULL, updated_at=excluded.updated_at`)
-    .run(id, input.workspaceId, input.employeeId, input.microsoftUserId, input.microsoftEmail, input.microsoftDisplayName,
+    .run(id, input.workspaceId, input.employeeId, input.googleUserId, input.gmailEmail, input.gmailDisplayName,
       input.encryptedAccessToken, input.encryptedRefreshToken, input.accessTokenExpiresAt, input.scopes, now, now)
   return getConnection(input)
 }
 
 export function updateConnectionTokens(id: string, encryptedAccessToken: string, encryptedRefreshToken: string, expiresAt: string) {
-  database().prepare("UPDATE outlook_connections SET encrypted_access_token=?, encrypted_refresh_token=?, access_token_expires_at=?, status='CONNECTED', last_error_code=NULL, updated_at=? WHERE id=?")
+  database().prepare("UPDATE gmail_connections SET encrypted_access_token=?, encrypted_refresh_token=?, access_token_expires_at=?, status='CONNECTED', last_error_code=NULL, updated_at=? WHERE id=?")
     .run(encryptedAccessToken, encryptedRefreshToken, expiresAt, new Date().toISOString(), id)
 }
 
 export function markConnectionError(id: string, code: string) {
-  database().prepare("UPDATE outlook_connections SET status='RECONNECT_REQUIRED', last_error_code=?, updated_at=? WHERE id=?")
+  database().prepare("UPDATE gmail_connections SET status='RECONNECT_REQUIRED', last_error_code=?, updated_at=? WHERE id=?")
     .run(code, new Date().toISOString(), id)
 }
 
 export function markConnectionSynced(id: string) {
   const now = new Date().toISOString()
-  database().prepare("UPDATE outlook_connections SET last_synced_at=?, status='CONNECTED', last_error_code=NULL, updated_at=? WHERE id=?").run(now, now, id)
+  database().prepare("UPDATE gmail_connections SET last_synced_at=?, status='CONNECTED', last_error_code=NULL, updated_at=? WHERE id=?").run(now, now, id)
 }
 
-export function disconnectOutlook(identity: Pick<SeenIdentity, 'workspaceId' | 'employeeId'>) {
-  database().prepare('DELETE FROM outlook_connections WHERE workspace_id=? AND employee_id=?').run(identity.workspaceId, identity.employeeId)
+export function disconnectGmail(identity: Pick<SeenIdentity, 'workspaceId' | 'employeeId'>) {
+  database().prepare('DELETE FROM gmail_connections WHERE workspace_id=? AND employee_id=?').run(identity.workspaceId, identity.employeeId)
 }
 
 export function hasProcessedEmailSource(identity: Pick<SeenIdentity, 'workspaceId' | 'employeeId'>, messageId: string) {
   const row = database().prepare(`SELECT processing_status FROM processed_email_sources
-    WHERE workspace_id=? AND employee_id=? AND microsoft_message_id=?`)
+    WHERE workspace_id=? AND employee_id=? AND gmail_message_id=?`)
     .get(identity.workspaceId, identity.employeeId, messageId)
   return row ? String(row.processing_status) !== 'FAILED' : false
 }
@@ -175,8 +205,8 @@ export function hasProcessedEmailSource(identity: Pick<SeenIdentity, 'workspaceI
 export function claimEmailSource(identity: Pick<SeenIdentity, 'workspaceId' | 'employeeId'>, source: EmailSourceInput) {
   const now = new Date().toISOString()
   const existing = database().prepare(`SELECT id, processing_status FROM processed_email_sources
-    WHERE workspace_id=? AND employee_id=? AND microsoft_message_id=?`)
-    .get(identity.workspaceId, identity.employeeId, source.microsoftMessageId)
+    WHERE workspace_id=? AND employee_id=? AND gmail_message_id=?`)
+    .get(identity.workspaceId, identity.employeeId, source.gmailMessageId)
   if (existing) {
     if (String(existing.processing_status) !== 'FAILED') return null
     const id = String(existing.id)
@@ -189,10 +219,10 @@ export function claimEmailSource(identity: Pick<SeenIdentity, 'workspaceId' | 'e
   }
   const id = randomUUID()
   const result = database().prepare(`INSERT OR IGNORE INTO processed_email_sources (
-    id, workspace_id, employee_id, microsoft_message_id, conversation_id, subject, source_timestamp,
+    id, workspace_id, employee_id, gmail_message_id, conversation_id, subject, source_timestamp,
     encrypted_source_reference, processing_status, created_at, updated_at
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PROCESSING', ?, ?)`)
-    .run(id, identity.workspaceId, identity.employeeId, source.microsoftMessageId, source.conversationId,
+    .run(id, identity.workspaceId, identity.employeeId, source.gmailMessageId, source.conversationId,
       source.subject, source.sourceTimestamp, source.encryptedSourceReference, now, now)
   if (result.changes === 0) return null
   return id

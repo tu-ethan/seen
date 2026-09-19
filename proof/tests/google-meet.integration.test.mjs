@@ -10,7 +10,7 @@ test('Google Meet transcript-generated evidence workflow', { timeout: 45_000 }, 
     env: {
       ...process.env,
       GOOGLE_MEET_ACCESS_TOKEN: 'mock-google-access-token',
-      GEMINI_API_KEY: 'mock-gemini-api-key',
+      OPENROUTER_API_KEY: 'mock-openrouter-api-key',
       GOOGLE_PUBSUB_TOPIC: 'projects/seen-demo/topics/meet-events',
       GOOGLE_PUBSUB_PUSH_TOKEN: 'mock-webhook-secret',
     },

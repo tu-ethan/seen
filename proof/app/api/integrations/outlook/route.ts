@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireIdentity } from '@/lib/server/auth'
 import { integrationReadiness } from '@/lib/server/config'
-import { audit, disconnectOutlook, getConnection } from '@/lib/server/database'
+import { audit, disconnectGmail, getConnection } from '@/lib/server/database'
 
 export async function GET(request: Request) {
   const auth = requireIdentity(request, 'employee')
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     missing: readiness.missing,
     connected: Boolean(connection),
     status: connection?.status ?? 'NOT_CONNECTED',
-    email: connection?.microsoftEmail ?? null,
+    email: connection?.gmailEmail ?? null,
     lastSyncedAt: connection?.lastSyncedAt ?? null,
   })
 }
@@ -22,7 +22,7 @@ export async function DELETE(request: Request) {
   const auth = requireIdentity(request, 'employee')
   if ('response' in auth) return auth.response
   const connection = getConnection(auth.identity)
-  if (connection) audit(auth.identity, 'OUTLOOK_DISCONNECTED', 'outlook_connection', connection.id)
-  disconnectOutlook(auth.identity)
+  if (connection) audit(auth.identity, 'OUTLOOK_DISCONNECTED', 'gmail_connection', connection.id)
+  disconnectGmail(auth.identity)
   return NextResponse.json({ disconnected: true })
 }

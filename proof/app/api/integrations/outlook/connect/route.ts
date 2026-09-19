@@ -1,14 +1,14 @@
 import { randomBytes } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { requireIdentity } from '@/lib/server/auth'
-import { getOutlookRuntimeConfig } from '@/lib/server/config'
+import { getGmailRuntimeConfig } from '@/lib/server/config'
 import { encryptSecret } from '@/lib/server/crypto'
-import { authorizationUrl, createPkcePair } from '@/lib/integrations/server/microsoft-graph'
+import { authorizationUrl, createPkcePair } from '@/lib/integrations/server/gmail'
 
 export async function GET(request: Request) {
   const auth = requireIdentity(request, 'employee')
   if ('response' in auth) return auth.response
-  const config = getOutlookRuntimeConfig()
+  const config = getGmailRuntimeConfig()
   if (!config || !process.env.APP_ENCRYPTION_KEY) {
     return NextResponse.redirect(new URL('/employee/connections?outlook=not-configured', request.url))
   }

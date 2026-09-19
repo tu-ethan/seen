@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { SeenIdentity } from '@/lib/server/auth'
-import { getOutlookRuntimeConfig } from '@/lib/server/config'
+import { getGmailRuntimeConfig } from '@/lib/server/config'
 import { decryptSecret, safeEqual } from '@/lib/server/crypto'
 import { audit } from '@/lib/server/database'
-import { exchangeAuthorizationCode, saveAuthorizedConnection } from '@/lib/integrations/server/microsoft-graph'
+import { exchangeAuthorizationCode, saveAuthorizedConnection } from '@/lib/integrations/server/gmail'
 
 interface OAuthCookie { state: string; verifier: string; identity: SeenIdentity; createdAt: number }
 
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     result.cookies.delete('seen_outlook_oauth')
     return result
   }
-  const config = getOutlookRuntimeConfig()
+  const config = getGmailRuntimeConfig()
   const cookie = readCookie(request)
   const state = url.searchParams.get('state')
   const code = url.searchParams.get('code')
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     const tokens = await exchangeAuthorizationCode(config, code, cookie.verifier)
     const connection = await saveAuthorizedConnection(cookie.identity, tokens)
     if (!connection) throw new Error('CONNECTION_SAVE_FAILED')
-    audit(cookie.identity, 'OUTLOOK_CONNECTED', 'outlook_connection', connection.id)
+    audit(cookie.identity, 'OUTLOOK_CONNECTED', 'gmail_connection', connection.id)
     return response('connected')
   } catch {
     return response('oauth-failed')

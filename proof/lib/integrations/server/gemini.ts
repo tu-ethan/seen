@@ -3,7 +3,7 @@ import { MOCK_GEMINI_CONTRIBUTIONS } from '@/lib/integrations/mock-data'
 import type { ExtractedContribution, ExtractionProvider, SourceDocument } from '@/lib/integrations/contracts'
 import type { ContributionCategory } from '@/types'
 
-interface GeminiResponse { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }
+interface OpenRouterResponse { choices?: Array<{ message?: { content?: string | Array<{ text?: string }> } }> }
 
 interface GeminiContribution {
   employee: string
@@ -63,10 +63,10 @@ export function buildStrictExtractionPrompt(documents: SourceDocument[], employe
   ].join('\n\n')
 }
 
-export class GeminiExtractionProvider implements ExtractionProvider {
+export class OpenRouterExtractionProvider implements ExtractionProvider {
   constructor(
-    private readonly apiKey = process.env.GEMINI_API_KEY,
-    private readonly model = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash',
+    private readonly apiKey = process.env.OPENROUTER_API_KEY,
+    private readonly model = process.env.OPENROUTER_MODEL ?? 'openrouter/free',
     private readonly fetcher: typeof fetch = fetch,
   ) {}
 
@@ -76,23 +76,30 @@ export class GeminiExtractionProvider implements ExtractionProvider {
       return structuredClone(MOCK_GEMINI_CONTRIBUTIONS).map((item) => ({ ...item, sourceId: documents[0].id }))
     }
 
-    const response = await this.fetcher(`https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent`, {
+    const response = await this.fetcher('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': this.apiKey },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.apiKey}` },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: buildStrictExtractionPrompt(documents, employeeName) }] }],
-        generationConfig: { responseMimeType: 'application/json', responseJsonSchema: contributionSchema, temperature: 0 },
+        model: this.model,
+        messages: [{ role: 'user', content: buildStrictExtractionPrompt(documents, employeeName) }],
+        temperature: 0,
+        response_format: {
+          type: 'json_schema',
+          json_schema: { name: 'meeting_contributions', strict: true, schema: contributionSchema },
+        },
+        provider: { require_parameters: true },
       }),
       cache: 'no-store',
     })
-    if (!response.ok) throw new Error(`Gemini extraction failed with status ${response.status}`)
+    if (!response.ok) throw new Error(`OpenRouter extraction failed with status ${response.status}`)
 
-    const payload = await response.json() as GeminiResponse
-    const text = payload.candidates?.[0]?.content?.parts?.map((part) => part.text ?? '').join('')
-    if (!text) throw new Error('Gemini returned no structured contribution data')
+    const payload = await response.json() as OpenRouterResponse
+    const content = payload.choices?.[0]?.message?.content
+    const text = typeof content === 'string' ? content : content?.map((part) => part.text ?? '').join('')
+    if (!text) throw new Error('OpenRouter returned no structured contribution data')
     const parsed: unknown = JSON.parse(text)
     if (!Array.isArray(parsed) || !parsed.every(isGeminiContribution)) {
-      throw new Error('Gemini returned contribution data that did not match the strict schema')
+      throw new Error('OpenRouter returned contribution data that did not match the strict schema')
     }
     return parsed.map((item) => ({ ...item, sourceId: documents[0].id }))
   }

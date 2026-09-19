@@ -163,7 +163,7 @@ export default function ConnectionsPage() {
           </div>
           <h2 className="mt-6 font-serif text-2xl text-[#eee7dc]">Outlook</h2>
           <p className="mt-2 max-w-lg text-sm font-medium leading-6 text-[#c7beb3]">Seen only processes messages you label with the Seen category. It does not scan your inbox.</p>
-          <p className="mt-2 max-w-lg text-sm leading-6 text-[#817a72]">Delegated access is limited to your signed-in Microsoft account. Attachments are never retrieved or sent to Gemini.</p>
+          <p className="mt-2 max-w-lg text-sm leading-6 text-[#817a72]">Delegated access is limited to your signed-in Microsoft account. Attachments are never retrieved or sent to OpenRouter.</p>
           <div className="mt-5 flex items-center gap-2 text-xs text-[#6f6962]"><ShieldCheck size={13} />Delegated, read-only scope · Mail.Read</div>
 
           {outlook?.connected && <div className="mt-5 rounded-xl border border-white/[0.08] bg-black/10 p-4 text-xs leading-5 text-[#8f887f]">

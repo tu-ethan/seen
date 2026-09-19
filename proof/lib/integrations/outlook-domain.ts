@@ -1,4 +1,4 @@
-export const OUTLOOK_CATEGORY = 'Seen'
+export const GMAIL_LABEL = 'Seen'
 export const MAX_EMAIL_TEXT_LENGTH = 12_000
 
 export interface OutlookEvidenceCandidate {
@@ -13,8 +13,8 @@ export interface OutlookEvidenceCandidate {
 
 const allowedTypes = new Set<OutlookEvidenceCandidate['type']>(['IMPROVED', 'SHIPPED', 'UNBLOCKED', 'RESEARCHED', 'MENTORED', 'LED'])
 
-export function isSeenLabeled(categories: readonly string[] | undefined) {
-  return categories?.includes(OUTLOOK_CATEGORY) === true
+export function isSeenLabeled(labels: readonly string[] | undefined) {
+  return labels?.includes(GMAIL_LABEL) === true
 }
 
 function decodeEntities(value: string) {

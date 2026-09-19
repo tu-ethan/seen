@@ -1,12 +1,12 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE IF NOT EXISTS outlook_connections (
+CREATE TABLE IF NOT EXISTS gmail_connections (
   id TEXT PRIMARY KEY,
   workspace_id TEXT NOT NULL,
   employee_id TEXT NOT NULL,
-  microsoft_user_id TEXT NOT NULL,
-  microsoft_email TEXT NOT NULL,
-  microsoft_display_name TEXT NOT NULL,
+  google_user_id TEXT NOT NULL,
+  gmail_email TEXT NOT NULL,
+  gmail_display_name TEXT NOT NULL,
   encrypted_access_token TEXT NOT NULL,
   encrypted_refresh_token TEXT NOT NULL,
   access_token_expires_at TEXT NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS processed_email_sources (
   id TEXT PRIMARY KEY,
   workspace_id TEXT NOT NULL,
   employee_id TEXT NOT NULL,
-  microsoft_message_id TEXT NOT NULL,
+  gmail_message_id TEXT NOT NULL,
   conversation_id TEXT NOT NULL,
   subject TEXT NOT NULL,
   source_timestamp TEXT NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS processed_email_sources (
   failure_code TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
-  UNIQUE(workspace_id, employee_id, microsoft_message_id)
+  UNIQUE(workspace_id, employee_id, gmail_message_id)
 );
 
 CREATE TABLE IF NOT EXISTS contribution_drafts (
